@@ -1,146 +1,105 @@
-# ts-react‑shadcn‑template
+# Digital Wallet Client
 
-A minimal React + TypeScript + Vite starter template, enhanced with ESLint integration and ready for shadcn/ui component usage.
+## Description
 
----
+This repository contains the frontend client for a digital wallet application. It is built using React, TypeScript, and Vite, with ESLint for code quality and pre-configured for integration with shadcn/ui components. The client provides a user-friendly interface for managing digital wallet features, including user authentication, balance viewing, transactions, and more. It connects to a backend API for data handling and authentication.
+
+The backend API can be found at: [https://github.com/muhammadranju/digital-wallet-api](https://github.com/muhammadranju/digital-wallet-api)
+
+This project serves as a starter template enhanced for building modern web applications, but tailored here for digital wallet functionality.
 
 ## Features
 
-- **React** with Fast Refresh (via `@vitejs/plugin-react` or optional SWC-based plugin) :contentReference[oaicite:1]{index=1}
-- **TypeScript** support
-- **Vite** build tool, optimized for speed
-- **ESLint** with default configuration—expandable with type-aware and React-specific rules :contentReference[oaicite:2]{index=2}
-- Ready-to-use **`shadcn/ui`** setup (add-on integration suggested)
-- Organized configuration files for ease of customization (e.g., `tsconfig.json`, `vite.config.ts`, etc.) :contentReference[oaicite:3]{index=3}
-
----
+- React with Fast Refresh for efficient development
+- TypeScript support for type-safe code
+- Vite as the build tool for fast performance
+- ESLint integration with customizable rules
+- Ready for shadcn/ui components (optional integration)
+- User authentication and role-based access (via backend API)
+- Wallet balance display and transaction management
+- Responsive UI components
 
 ## Prerequisites
 
-Ensure the following are installed:
-
-- Node.js (v16+ recommended)
-- A JavaScript package manager (`npm`, `pnpm`, `yarn` or `bun`)
-
----
+- Node.js (v16 or higher recommended)
+- A package manager such as npm, yarn, pnpm, or bun
+- The backend API running locally or deployed (configure API endpoint in environment variables)
 
 ## Getting Started
 
-```bash
-git clone https://github.com/muhammadranju/ts-react-shadcn-template.git
-cd ts-react-shadcn-template
-# Install dependencies:
-npm install
-# or yarn install / pnpm install / bun install
-```
+1. Clone the repository:
 
-### Run Development Server
+   ```
+   git clone https://github.com/muhammadranju/digital-wallet-client.git
+   cd digital-wallet-client
+   ```
 
-```bash
-npm run dev
-# or yarn dev / pnpm dev / bun dev
-```
+2. Install dependencies:
 
-You’ll have a development server with hot reload and ESLint support ready to go.
+   ```
+   npm install
+   ```
 
----
+   (Or use `yarn install`, `pnpm install`, or `bun install`)
+
+3. Configure environment variables (e.g., create a `.env` file with the backend API URL):
+
+   ```
+   VITE_API_BASE_URL=http://localhost:5000/api
+   ```
+
+4. Run the development server:
+
+   ```
+   npm run dev
+   ```
+
+   (Or use `yarn dev`, `pnpm dev`, or `bun dev`)
+
+   The application will be available at `http://localhost:5173` (or the port specified by Vite).
 
 ## Available Scripts
 
-- `dev` — Start the Vite development server
-- `build` — Create a production-ready build
-- `lint` — Run ESLint checks (customizable rules supported)
-- `preview` — Preview production build locally (via `vite preview`)
-
-_(Note: adjust actual script names if different in your `package.json`.)_
-
----
-
-## ESLint Configuration
-
-By default, ESLint is set up for basic React and TypeScript linting. To enable stricter, type-aware rules, you can extend your config like this:
-
-```js
-// eslint.config.js
-export default tseslint.config([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      ...tseslint.configs.recommendedTypeChecked,
-      // or for stricter checks:
-      ...tseslint.configs.strictTypeChecked,
-      // optional stylistic rules:
-      ...tseslint.configs.stylisticTypeChecked,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-]);
-```
-
-You can also install and integrate plugins like `eslint-plugin-react-x` and `eslint-plugin-react-dom` for improved React linting ([GitHub][1]).
-
----
+- `dev`: Starts the Vite development server with hot module replacement.
+- `build`: Builds the application for production.
+- `lint`: Runs ESLint to check for code issues.
+- `preview`: Previews the production build locally.
 
 ## Project Structure
 
 ```
-ts-react-shadcn-template/
-├── public/                   # Static web assets
-├── src/                      # Application source
-│   ├── components/           # React UI components
-│   ├── App.tsx               # Main component
-│   └── index.tsx             # Application entry point
-├── .gitignore
-├── components.json           # shadcn/ui component config
-├── eslint.config.js          # ESLint rules (configurable)
-├── index.html
-├── package.json
-├── tsconfig*.json            # TypeScript configs
+digital-wallet-client/
+├── public/                   # Static assets
+├── src/                      # Source code
+│   ├── components/           # Reusable React components (e.g., UI elements for wallet features)
+│   ├── App.tsx               # Main application component
+│   └── index.tsx             # Entry point
+├── .gitignore                # Git ignore file
+├── components.json           # shadcn/ui configuration
+├── eslint.config.js          # ESLint configuration
+├── index.html                # HTML template
+├── package.json              # Dependencies and scripts
+├── tsconfig.json             # TypeScript configuration
+├── tsconfig.app.json         # App-specific TypeScript config
+├── tsconfig.node.json        # Node-specific TypeScript config
 └── vite.config.ts            # Vite configuration
 ```
 
-_(Tailor as needed—add any additional folders or files relevant to your repo.)_
-
----
-
 ## Integration with shadcn/ui (Optional)
 
-To incorporate `shadcn/ui`, follow the official Vite setup guide:
+To add shadcn/ui components:
 
-1. Add Tailwind CSS and necessary dependencies
-2. Configure TypeScript path aliasing (`@` → `src/`) in `tsconfig.json` / `tsconfig.app.json` and `vite.config.ts`
-3. Run the shadcn CLI for initialization and component installation
+1. Ensure Tailwind CSS is set up (if not already).
+2. Run the shadcn CLI to add components:
+   ```
+   npx shadcn-ui@latest add button
+   ```
+3. Update TypeScript path aliases if needed (refer to shadcn/ui documentation).
 
-You can refer to the official documentation for detailed steps ([Shadcn UI][2]).
+## Contributing
 
----
+Contributions are welcome! Feel free to open issues or submit pull requests for improvements, bug fixes, or new features. Please follow standard coding practices and run `npm run lint` before committing.
 
 ## License
 
-This project is released under the **MIT License**. See the `LICENSE` file for full details.
-
----
-
-## About / Acknowledgments
-
-_(Feel free to personalize this—mention your name, any specific inspirations, or the purpose of the project.)_
-
----
-
-### Feedback & Contributions
-
-Contributions, feedback, and suggestions are welcome! Open an issue or a pull request to get started.
-
----
-
-Let me know if you'd like to refine any section further—whether it’s installation, usage examples, adding a badges panel, or customizing shadcn integration!
-
-[1]: https://github.com/muhammadranju/ts-react-shadcn-template "GitHub - muhammadranju/ts-react-shadcn-template"
-
-[2]: https://ui.shadcn.com/docs/installation/vite"Vite - Shadcn UI"
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
