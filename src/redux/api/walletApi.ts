@@ -1,29 +1,29 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.paywallet.demo"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { BASE_URL } from "@/lib/Base_URL";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface WalletBalance {
-  balance: number
-  currency: string
-  lastUpdated: string
+  balance: number;
+  currency: string;
+  lastUpdated: string;
 }
 
 export interface DepositRequest {
-  amount: number
-  agentId: string
-  method: "cash" | "bank"
+  amount: number;
+  agentId: string;
+  method: "cash" | "bank";
 }
 
 export interface WithdrawRequest {
-  amount: number
-  agentId?: string
-  method: "cash" | "bank"
+  amount: number;
+  agentId?: string;
+  method: "cash" | "bank";
 }
 
 export interface SendMoneyRequest {
-  recipientId: string
-  amount: number
-  note?: string
+  recipientId: string;
+  amount: number;
+  note?: string;
 }
 
 export const walletApi = createApi({
@@ -31,11 +31,11 @@ export const walletApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${BASE_URL}/wallet`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token
+      const token = (getState() as any).auth.token;
       if (token) {
-        headers.set("authorization", `Bearer ${token}`)
+        headers.set("authorization", `Bearer ${token}`);
       }
-      return headers
+      return headers;
     },
   }),
   tagTypes: ["Wallet"],
@@ -44,7 +44,10 @@ export const walletApi = createApi({
       query: () => "/balance",
       providesTags: ["Wallet"],
     }),
-    deposit: builder.mutation<{ message: string; transactionId: string }, DepositRequest>({
+    deposit: builder.mutation<
+      { message: string; transactionId: string },
+      DepositRequest
+    >({
       query: (depositData) => ({
         url: "/deposit",
         method: "POST",
@@ -52,7 +55,10 @@ export const walletApi = createApi({
       }),
       invalidatesTags: ["Wallet"],
     }),
-    withdraw: builder.mutation<{ message: string; transactionId: string }, WithdrawRequest>({
+    withdraw: builder.mutation<
+      { message: string; transactionId: string },
+      WithdrawRequest
+    >({
       query: (withdrawData) => ({
         url: "/withdraw",
         method: "POST",
@@ -60,7 +66,10 @@ export const walletApi = createApi({
       }),
       invalidatesTags: ["Wallet"],
     }),
-    sendMoney: builder.mutation<{ message: string; transactionId: string }, SendMoneyRequest>({
+    sendMoney: builder.mutation<
+      { message: string; transactionId: string },
+      SendMoneyRequest
+    >({
       query: (sendData) => ({
         url: "/send",
         method: "POST",
@@ -69,6 +78,11 @@ export const walletApi = createApi({
       invalidatesTags: ["Wallet"],
     }),
   }),
-})
+});
 
-export const { useGetBalanceQuery, useDepositMutation, useWithdrawMutation, useSendMoneyMutation } = walletApi
+export const {
+  useGetBalanceQuery,
+  useDepositMutation,
+  useWithdrawMutation,
+  useSendMoneyMutation,
+} = walletApi;

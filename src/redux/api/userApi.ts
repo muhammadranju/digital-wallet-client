@@ -1,21 +1,21 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import type { User } from "../slices/authSlice"
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.paywallet.demo"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { User } from "../slices/authSlice";
+import { BASE_URL } from "@/lib/Base_URL";
 
 export interface UserFilters {
-  role?: string
-  status?: string
-  search?: string
-  page?: number
-  limit?: number
+  role?: string;
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export interface UsersResponse {
-  users: User[]
-  total: number
-  page: number
-  totalPages: number
+  users: User[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 export const userApi = createApi({
@@ -23,24 +23,24 @@ export const userApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${BASE_URL}/users`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token
+      const token = (getState() as any).auth.token;
       if (token) {
-        headers.set("authorization", `Bearer ${token}`)
+        headers.set("authorization", `Bearer ${token}`);
       }
-      return headers
+      return headers;
     },
   }),
   tagTypes: ["User"],
   endpoints: (builder) => ({
     getUsers: builder.query<UsersResponse, UserFilters>({
       query: (filters) => {
-        const params = new URLSearchParams()
+        const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined) {
-            params.append(key, value.toString())
+            params.append(key, value.toString());
           }
-        })
-        return `?${params.toString()}`
+        });
+        return `?${params.toString()}`;
       },
       providesTags: ["User"],
     }),
@@ -61,6 +61,11 @@ export const userApi = createApi({
       providesTags: ["User"],
     }),
   }),
-})
+});
 
-export const { useGetUsersQuery, useGetUserByIdQuery, useUpdateUserStatusMutation, useSearchUsersQuery } = userApi
+export const {
+  useGetUsersQuery,
+  useGetUserByIdQuery,
+  useUpdateUserStatusMutation,
+  useSearchUsersQuery,
+} = userApi;

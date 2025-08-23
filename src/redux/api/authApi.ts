@@ -1,25 +1,25 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import type { User } from "../slices/authSlice"
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.paywallet.demo"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { User } from "../slices/authSlice";
+import { BASE_URL } from "@/lib/Base_URL";
 
 export interface LoginRequest {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 export interface RegisterRequest {
-  name: string
-  email: string
-  phone: string
-  password: string
-  role: "user" | "agent"
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: "user" | "agent";
 }
 
 export interface AuthResponse {
-  user: User
-  token: string
-  message: string
+  user: User;
+  token: string;
+  message: string;
 }
 
 export const authApi = createApi({
@@ -27,11 +27,11 @@ export const authApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${BASE_URL}/auth`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token
+      const token = (getState() as any).auth.token;
       if (token) {
-        headers.set("authorization", `Bearer ${token}`)
+        headers.set("authorization", `Bearer ${token}`);
       }
-      return headers
+      return headers;
     },
   }),
   tagTypes: ["Auth"],
@@ -68,7 +68,10 @@ export const authApi = createApi({
       }),
       invalidatesTags: ["Auth"],
     }),
-    changePassword: builder.mutation<{ message: string }, { currentPassword: string; newPassword: string }>({
+    changePassword: builder.mutation<
+      { message: string },
+      { currentPassword: string; newPassword: string }
+    >({
       query: (passwords) => ({
         url: "/change-password",
         method: "PUT",
@@ -76,7 +79,7 @@ export const authApi = createApi({
       }),
     }),
   }),
-})
+});
 
 export const {
   useLoginMutation,
@@ -85,4 +88,4 @@ export const {
   useGetProfileQuery,
   useUpdateProfileMutation,
   useChangePasswordMutation,
-} = authApi
+} = authApi;
