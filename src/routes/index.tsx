@@ -6,6 +6,10 @@ import LoginPage from "@/pages/auth/Login";
 import SignupPage from "@/pages/auth/Signup";
 import Contact from "@/pages/Contact";
 import AdminDashboardPage from "@/pages/dashboard/admin/AdminDashboardPage";
+import AdminAgentsPage from "@/pages/dashboard/admin/AgentsPage";
+import AdminSettingsPage from "@/pages/dashboard/admin/SettingsPage";
+import AdminTransactionsPage from "@/pages/dashboard/admin/TransactionsPage";
+import AdminUsersPage from "@/pages/dashboard/admin/UserPage";
 import AgentDashboardPage from "@/pages/dashboard/agent/AgentDashboardPage";
 import CashOperationsPage from "@/pages/dashboard/agent/CashOperationsPage";
 import CommissionPage from "@/pages/dashboard/agent/Commission";
@@ -98,6 +102,22 @@ export const router = createBrowserRouter([
       {
         Component: AdminDashboardPage,
         path: "admin",
+      },
+      {
+        Component: AdminAgentsPage,
+        path: "admin/agents",
+      },
+      {
+        Component: AdminUsersPage,
+        path: "admin/users",
+      },
+      {
+        Component: AdminSettingsPage,
+        path: "admin/settings",
+      },
+      {
+        Component: AdminTransactionsPage,
+        path: "admin/transactions",
       },
     ],
   },
