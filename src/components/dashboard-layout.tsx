@@ -15,6 +15,7 @@ import {
   Bell,
   CreditCard,
   Home,
+  LogOut,
   Menu,
   Search,
   Settings,
@@ -24,8 +25,8 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router"; // ✅ React Router navigation
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -97,11 +98,17 @@ export function DashboardLayout({
   userEmail = "john@example.com",
   userAvatar,
 }: DashboardLayoutProps) {
-  const [activeItem, setActiveItem] = useState(
-    navigationItems[userRole][0].href
-  );
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [activeItem, setActiveItem] = useState(location.pathname);
+
+  // update activeItem whenever route changes
+  useEffect(() => {
+    setActiveItem(location.pathname);
+  }, [location.pathname]);
+
   const navItems = navigationItems[userRole];
-  const navigate = useNavigate(); // ✅ navigation hook
 
   const Sidebar = ({ className = "" }: { className?: string }) => (
     <div className={`flex h-full flex-col bg-sidebar ${className}`}>
@@ -130,15 +137,14 @@ export function DashboardLayout({
           return (
             <Button
               key={item.href}
-              variant={isActive ? "secondary" : "ghost"}
+              variant={isActive ? "outline" : "ghost"}
               className={`w-full justify-start gap-3 ${
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50"
               }`}
               onClick={() => {
-                setActiveItem(item.href);
-                navigate(item.href); // ✅ navigate on click
+                navigate(item.href); // ✅ navigate
               }}
             >
               <Icon className="h-4 w-4" />
@@ -230,10 +236,10 @@ export function DashboardLayout({
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {/* <DropdownMenuItem onClick={logout}>
+                <DropdownMenuItem>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
-                </DropdownMenuItem> */}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
