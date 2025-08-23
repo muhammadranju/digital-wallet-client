@@ -10,6 +10,7 @@ import AgentDashboardPage from "@/pages/dashboard/agent/AgentDashboardPage";
 import CashOperationsPage from "@/pages/dashboard/agent/CashOperationsPage";
 import CommissionPage from "@/pages/dashboard/agent/Commission";
 import AgentProfilePage from "@/pages/dashboard/agent/Profile";
+import AgentTransactionsPage from "@/pages/dashboard/agent/Transactions";
 import ProfilePage from "@/pages/dashboard/user/Profile";
 import TransactionsPage from "@/pages/dashboard/user/Transactions";
 import UserDashboardPage from "@/pages/dashboard/user/UserDashboardPage";
@@ -76,23 +77,23 @@ export const router = createBrowserRouter([
       },
       {
         Component: AgentDashboardPage,
-        path: "agents",
+        path: "agent",
       },
       {
         Component: CashOperationsPage,
-        path: "agents/cash-operations",
+        path: "agent/cash-operations",
       },
       {
         Component: AgentProfilePage,
-        path: "agents/profile",
+        path: "agent/profile",
       },
       {
         Component: CommissionPage,
-        path: "agents/commission",
+        path: "agent/commission",
       },
       {
-        Component: TransactionsPage,
-        path: "agents/transactions",
+        Component: AgentTransactionsPage,
+        path: "agent/transactions",
       },
       {
         Component: AdminDashboardPage,

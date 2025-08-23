@@ -1,5 +1,4 @@
 import type React from "react";
-// import { useAuth } from "@/components/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router"; // ✅ React Router navigation
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -37,28 +37,44 @@ interface DashboardLayoutProps {
 
 const navigationItems = {
   user: [
-    { icon: Home, label: "Overview", href: "/dashboard" },
-    { icon: Wallet, label: "Wallet", href: "/dashboard/wallet" },
+    { icon: Home, label: "Overview", href: "/dashboard/user" },
+    { icon: Wallet, label: "Wallet", href: "/dashboard/user/wallet" },
     {
       icon: CreditCard,
       label: "Transactions",
-      href: "/dashboard/transactions",
+      href: "/dashboard/user/transactions",
     },
-    { icon: User, label: "Profile", href: "/dashboard/profile" },
+    { icon: User, label: "Profile", href: "/dashboard/user/profile" },
   ],
   agent: [
-    { icon: Home, label: "Overview", href: "/agent" },
-    { icon: Wallet, label: "Cash Operations", href: "/agent/cash-operations" },
-    { icon: CreditCard, label: "Transactions", href: "/agent/transactions" },
-    { icon: TrendingUp, label: "Commission", href: "/agent/commission" },
-    { icon: User, label: "Profile", href: "/agent/profile" },
+    { icon: Home, label: "Overview", href: "/dashboard/agent" },
+    {
+      icon: Wallet,
+      label: "Cash Operations",
+      href: "/dashboard/agent/cash-operations",
+    },
+    {
+      icon: CreditCard,
+      label: "Transactions",
+      href: "/dashboard/agent/transactions",
+    },
+    {
+      icon: TrendingUp,
+      label: "Commission",
+      href: "/dashboard/agent/commission",
+    },
+    { icon: User, label: "Profile", href: "/dashboard/agent/profile" },
   ],
   admin: [
-    { icon: Home, label: "Overview", href: "/admin" },
-    { icon: Users, label: "Users", href: "/admin/users" },
-    { icon: UserCheck, label: "Agents", href: "/admin/agents" },
-    { icon: CreditCard, label: "Transactions", href: "/admin/transactions" },
-    { icon: Settings, label: "Settings", href: "/admin/settings" },
+    { icon: Home, label: "Overview", href: "/dashboard/admin" },
+    { icon: Users, label: "Users", href: "/dashboard/admin/users" },
+    { icon: UserCheck, label: "Agents", href: "/dashboard/admin/agents" },
+    {
+      icon: CreditCard,
+      label: "Transactions",
+      href: "/dashboard/admin/transactions",
+    },
+    { icon: Settings, label: "Settings", href: "/dashboard/admin/settings" },
   ],
 };
 
@@ -85,7 +101,7 @@ export function DashboardLayout({
     navigationItems[userRole][0].href
   );
   const navItems = navigationItems[userRole];
-  // const { logout } = useAuth()
+  const navigate = useNavigate(); // ✅ navigation hook
 
   const Sidebar = ({ className = "" }: { className?: string }) => (
     <div className={`flex h-full flex-col bg-sidebar ${className}`}>
@@ -120,7 +136,10 @@ export function DashboardLayout({
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50"
               }`}
-              onClick={() => setActiveItem(item.href)}
+              onClick={() => {
+                setActiveItem(item.href);
+                navigate(item.href); // ✅ navigate on click
+              }}
             >
               <Icon className="h-4 w-4" />
               {item.label}
