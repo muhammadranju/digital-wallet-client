@@ -1,13 +1,21 @@
-"use client"
-
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { StatCard, adminStats } from "@/components/dashboard-stats"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
-import { Users, UserCheck, AlertTriangle, TrendingUp, Settings, Shield, Activity, Clock } from "lucide-react"
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { StatCard, adminStats } from "@/components/dashboard-stats";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import {
+  Users,
+  UserCheck,
+  AlertTriangle,
+  TrendingUp,
+  Settings,
+  Shield,
+  Activity,
+  Clock,
+} from "lucide-react";
+import { Link } from "react-router";
 
 // Mock recent admin activity data
 const recentActivity = [
@@ -39,7 +47,7 @@ const recentActivity = [
     time: "2 hours ago",
     severity: "high",
   },
-]
+];
 
 // Mock pending approvals
 const pendingApprovals = [
@@ -64,7 +72,7 @@ const pendingApprovals = [
     details: "$25,000 transaction requires approval",
     time: "6 hours ago",
   },
-]
+];
 
 // Mock system health metrics
 const systemMetrics = [
@@ -72,55 +80,67 @@ const systemMetrics = [
   { label: "Database Performance", value: 88, status: "good" },
   { label: "Transaction Success Rate", value: 99.8, status: "excellent" },
   { label: "System Uptime", value: 99.9, status: "excellent" },
-]
+];
 
 export default function AdminDashboardPage() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "high":
-        return "text-red-600 bg-red-50"
+        return "text-red-600 bg-red-50";
       case "medium":
-        return "text-orange-600 bg-orange-50"
+        return "text-orange-600 bg-orange-50";
       case "low":
-        return "text-blue-600 bg-blue-50"
+        return "text-blue-600 bg-blue-50";
       default:
-        return "text-gray-600 bg-gray-50"
+        return "text-gray-600 bg-gray-50";
     }
-  }
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "user_blocked":
-        return <Shield className="h-4 w-4 text-red-600" />
+        return <Shield className="h-4 w-4 text-red-600" />;
       case "agent_approved":
-        return <UserCheck className="h-4 w-4 text-green-600" />
+        return <UserCheck className="h-4 w-4 text-green-600" />;
       case "system_update":
-        return <Settings className="h-4 w-4 text-blue-600" />
+        return <Settings className="h-4 w-4 text-blue-600" />;
       case "large_transaction":
-        return <AlertTriangle className="h-4 w-4 text-orange-600" />
+        return <AlertTriangle className="h-4 w-4 text-orange-600" />;
       default:
-        return <Activity className="h-4 w-4 text-gray-600" />
+        return <Activity className="h-4 w-4 text-gray-600" />;
     }
-  }
+  };
 
   return (
-    <DashboardLayout userRole="admin" userName="Admin User" userEmail="admin@example.com">
+    <DashboardLayout
+      userRole="admin"
+      userName="Admin User"
+      userEmail="admin@example.com"
+    >
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">System overview and management controls</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Admin Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              System overview and management controls
+            </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2 bg-transparent">
-              <TrendingUp className="h-4 w-4" />
-              Analytics
-            </Button>
-            <Button className="gap-2">
-              <Settings className="h-4 w-4" />
-              System Settings
-            </Button>
+            <Link to={"/dashboard/admin/users"}>
+              <Button variant="outline" className="gap-2 bg-transparent">
+                <TrendingUp className="h-4 w-4" />
+                Analytics
+              </Button>
+            </Link>
+            <Link to={"/dashboard/admin/settings"}>
+              <Button className="gap-2">
+                <Settings className="h-4 w-4" />
+                System Settings
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -144,7 +164,10 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {pendingApprovals.map((approval) => (
-                <div key={approval.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={approval.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="text-xs">
@@ -156,12 +179,20 @@ export default function AdminDashboardPage() {
                     </Avatar>
                     <div>
                       <p className="font-medium text-sm">{approval.name}</p>
-                      <p className="text-xs text-muted-foreground">{approval.details}</p>
-                      <p className="text-xs text-muted-foreground">{approval.time}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {approval.details}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {approval.time}
+                      </p>
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <Button size="sm" variant="outline" className="h-6 px-2 text-xs bg-transparent">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 px-2 text-xs bg-transparent"
+                    >
                       Review
                     </Button>
                   </div>
@@ -187,15 +218,29 @@ export default function AdminDashboardPage() {
             <CardContent>
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center justify-between">
+                  <div
+                    key={activity.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-muted">{getActivityIcon(activity.type)}</div>
+                      <div className="p-2 rounded-full bg-muted">
+                        {getActivityIcon(activity.type)}
+                      </div>
                       <div>
-                        <p className="font-medium text-sm">{activity.description}</p>
-                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                        <p className="font-medium text-sm">
+                          {activity.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.time}
+                        </p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className={`text-xs ${getSeverityColor(activity.severity)}`}>
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs ${getSeverityColor(
+                        activity.severity
+                      )}`}
+                    >
                       {activity.severity}
                     </Badge>
                   </div>
@@ -219,7 +264,9 @@ export default function AdminDashboardPage() {
                 <div key={index} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">{metric.label}</span>
-                    <span className="text-muted-foreground">{metric.value}%</span>
+                    <span className="text-muted-foreground">
+                      {metric.value}%
+                    </span>
                   </div>
                   <Progress
                     value={metric.value}
@@ -227,8 +274,8 @@ export default function AdminDashboardPage() {
                       metric.status === "excellent"
                         ? "text-green-600"
                         : metric.status === "good"
-                          ? "text-blue-600"
-                          : "text-orange-600"
+                        ? "text-blue-600"
+                        : "text-orange-600"
                     }`}
                   />
                   <Badge
@@ -237,8 +284,8 @@ export default function AdminDashboardPage() {
                       metric.status === "excellent"
                         ? "bg-green-50 text-green-700"
                         : metric.status === "good"
-                          ? "bg-blue-50 text-blue-700"
-                          : "bg-orange-50 text-orange-700"
+                        ? "bg-blue-50 text-blue-700"
+                        : "bg-orange-50 text-orange-700"
                     }`}
                   >
                     {metric.status}
@@ -251,47 +298,63 @@ export default function AdminDashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-              <h3 className="font-semibold">Manage Users</h3>
-              <p className="text-sm text-muted-foreground">View and manage user accounts</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/admin/users"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold">Manage Users</h3>
+                <p className="text-sm text-muted-foreground">
+                  View and manage user accounts
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <UserCheck className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="font-semibold">Manage Agents</h3>
-              <p className="text-sm text-muted-foreground">Approve and manage agents</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/admin/agents"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <UserCheck className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="font-semibold">Manage Agents</h3>
+                <p className="text-sm text-muted-foreground">
+                  Approve and manage agents
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <Activity className="h-6 w-6 text-purple-600" />
-              </div>
-              <h3 className="font-semibold">Transactions</h3>
-              <p className="text-sm text-muted-foreground">Monitor all transactions</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/admin/transactions"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                  <Activity className="h-6 w-6 text-purple-600" />
+                </div>
+                <h3 className="font-semibold">Transactions</h3>
+                <p className="text-sm text-muted-foreground">
+                  Monitor all transactions
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-                <Settings className="h-6 w-6 text-orange-600" />
-              </div>
-              <h3 className="font-semibold">System Settings</h3>
-              <p className="text-sm text-muted-foreground">Configure system parameters</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/admin/settings"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                  <Settings className="h-6 w-6 text-orange-600" />
+                </div>
+                <h3 className="font-semibold">System Settings</h3>
+                <p className="text-sm text-muted-foreground">
+                  Configure system parameters
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }
