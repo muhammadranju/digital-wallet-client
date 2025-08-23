@@ -13,6 +13,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LogOut, Menu, Settings, User, Wallet } from "lucide-react";
 import { Link, NavLink } from "react-router";
+import { DialogTitle } from "@radix-ui/react-dialog"; // <- Required for accessibility
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -67,25 +68,26 @@ export function Navbar() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {user.name}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user.email}
-                  </p>
+                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+
               <DropdownMenuItem asChild>
-                <User className="mr-2 h-4 w-4" />
-                Dashboard
+                <Link to="/dashboard/user" className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  Dashboard
+                </Link>
               </DropdownMenuItem>
+
               <DropdownMenuItem asChild>
-                <Link to="/profile">
+                <Link to="/dashboard/user/profile" className="flex items-center">
                   <Settings className="mr-2 h-4 w-4" />
                   Profile
                 </Link>
               </DropdownMenuItem>
+
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -110,8 +112,12 @@ export function Navbar() {
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
+
           <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-            <div className="flex flex-col space-y-4 mt-4">
+            {/* DialogTitle added for accessibility */}
+            <DialogTitle className="sr-only">Mobile Navigation</DialogTitle>
+
+            <div className="flex flex-col space-y-4 mt-4 ml-5">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.href}
@@ -127,47 +133,44 @@ export function Navbar() {
                 </NavLink>
               ))}
 
-              <>
-                <div className="border-t pt-4">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        {user.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
+              <div className="border-t pt-4">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
+                </div>
+
+                <div className="flex items-center space-x-2 mb-2">
                   <User className="h-4 w-4" />
                   <span>Dashboard</span>
-                  <NavLink
-                    to="/profile"
-                    className={({ isActive }) =>
-                      `flex items-center space-x-2 text-sm font-medium mb-2 ${
-                        isActive ? "underline underline-offset-4" : ""
-                      }`
-                    }
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Profile</span>
-                  </NavLink>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start p-0 h-auto"
-                    onClick={() => {
-                      setIsOpen(false);
-                    }}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </Button>
                 </div>
-              </>
+
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    `flex items-center space-x-2 text-sm font-medium mb-2 ${
+                      isActive ? "underline underline-offset-4" : ""
+                    }`
+                  }
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Profile</span>
+                </NavLink>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start p-0 h-auto"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </Button>
+              </div>
 
               <div className="border-t pt-4 space-y-2">
                 <Button variant="ghost" className="w-full" asChild>

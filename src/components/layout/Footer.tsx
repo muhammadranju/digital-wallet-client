@@ -1,5 +1,6 @@
 import { Wallet } from "lucide-react";
 import { Link } from "react-router";
+import { LineShadowText } from "@/components/magicui/line-shadow-text";
 
 const Footer = () => {
   return (
@@ -75,6 +76,11 @@ const Footer = () => {
               </li>
             </ul>
           </div>
+        </div>
+        <div className="flex justify-center items-center lg:-my-16 ">
+          <strong className="uppercase lg:text-[15em]  md:text-[8em] text-[40px] font-black">
+            <LineShadowText>PayWallet</LineShadowText>
+          </strong>
         </div>
         <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
           <p>

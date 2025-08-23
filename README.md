@@ -1,4 +1,4 @@
-# Digital Wallet Client
+# Digital Wallet Client - Template
 
 ## Description
 

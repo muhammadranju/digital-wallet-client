@@ -26,7 +26,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation, Link } from "react-router";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -112,23 +112,25 @@ export function DashboardLayout({
 
   const Sidebar = ({ className = "" }: { className?: string }) => (
     <div className={`flex h-full flex-col bg-sidebar ${className}`}>
-      <div className="flex h-14 items-center border-b border-sidebar-border px-4">
-        <div className="flex items-center gap-2">
-          <div
-            className={`h-8 w-8 rounded-lg ${roleColors[userRole]} flex items-center justify-center`}
-          >
-            <Wallet className="h-4 w-4 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-sidebar-foreground">
-              PayWallet
-            </span>
-            <Badge variant="secondary" className="text-xs w-fit">
-              {roleLabels[userRole]}
-            </Badge>
+      <Link to={"/"}>
+        <div className="flex h-14 items-center border-b border-sidebar-border px-4">
+          <div className="flex items-center gap-2">
+            <div
+              className={`h-8 w-8 rounded-lg ${roleColors[userRole]} flex items-center justify-center`}
+            >
+              <Wallet className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-sidebar-foreground">
+                PayWallet
+              </span>
+              <Badge variant="secondary" className="text-xs w-fit">
+                {roleLabels[userRole]}
+              </Badge>
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
 
       <nav className="flex-1 space-y-1 p-4">
         {navItems.map((item) => {
