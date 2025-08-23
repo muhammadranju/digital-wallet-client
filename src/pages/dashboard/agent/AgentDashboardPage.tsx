@@ -1,12 +1,19 @@
-"use client"
 
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { StatCard, agentStats } from "@/components/dashboard-stats"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Plus, Minus, TrendingUp, Users, Clock, CheckCircle } from "lucide-react"
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { StatCard, agentStats } from "@/components/dashboard-stats";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Plus,
+  Minus,
+  TrendingUp,
+  Users,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
+import { Link } from "react-router";
 
 // Mock recent agent activity data
 const recentActivity = [
@@ -46,7 +53,7 @@ const recentActivity = [
     time: "2 hours ago",
     status: "completed",
   },
-]
+];
 
 // Mock pending requests
 const pendingRequests = [
@@ -64,17 +71,25 @@ const pendingRequests = [
     amount: "$150.00",
     requestTime: "12 minutes ago",
   },
-]
+];
 
 export default function AgentDashboardPage() {
   return (
-    <DashboardLayout userRole="agent" userName="Agent Smith" userEmail="agent@example.com">
+    <DashboardLayout
+      userRole="agent"
+      userName="Agent Smith"
+      userEmail="agent@example.com"
+    >
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Agent Dashboard</h1>
-            <p className="text-muted-foreground">Manage cash operations and track your performance</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Agent Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Manage cash operations and track your performance
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="gap-2 bg-transparent">
@@ -108,7 +123,10 @@ export default function AgentDashboardPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {pendingRequests.map((request) => (
-                <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={request.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="text-xs">
@@ -128,7 +146,11 @@ export default function AgentDashboardPage() {
                   <div className="text-right">
                     <p className="font-medium text-sm">{request.amount}</p>
                     <div className="flex gap-1 mt-1">
-                      <Button size="sm" variant="outline" className="h-6 px-2 text-xs bg-transparent">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 px-2 text-xs bg-transparent"
+                      >
                         Accept
                       </Button>
                     </div>
@@ -155,18 +177,28 @@ export default function AgentDashboardPage() {
             <CardContent>
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center justify-between">
+                  <div
+                    key={activity.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-3">
                       <div
                         className={`p-2 rounded-full ${
-                          activity.type === "cash-in" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                          activity.type === "cash-in"
+                            ? "bg-green-100 text-green-600"
+                            : "bg-red-100 text-red-600"
                         }`}
                       >
-                        {activity.type === "cash-in" ? <Plus className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                        {activity.type === "cash-in" ? (
+                          <Plus className="h-4 w-4" />
+                        ) : (
+                          <Minus className="h-4 w-4" />
+                        )}
                       </div>
                       <div>
                         <p className="font-medium text-sm">
-                          {activity.type === "cash-in" ? "Cash In" : "Cash Out"} - {activity.user}
+                          {activity.type === "cash-in" ? "Cash In" : "Cash Out"}{" "}
+                          - {activity.user}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Commission: {activity.commission} • {activity.time}
@@ -176,12 +208,21 @@ export default function AgentDashboardPage() {
                     <div className="text-right">
                       <p
                         className={`font-medium text-sm ${
-                          activity.type === "cash-in" ? "text-green-600" : "text-red-600"
+                          activity.type === "cash-in"
+                            ? "text-green-600"
+                            : "text-red-600"
                         }`}
                       >
                         {activity.amount}
                       </p>
-                      <Badge variant={activity.status === "completed" ? "default" : "secondary"} className="text-xs">
+                      <Badge
+                        variant={
+                          activity.status === "completed"
+                            ? "default"
+                            : "secondary"
+                        }
+                        className="text-xs"
+                      >
                         {activity.status}
                       </Badge>
                     </div>
@@ -194,47 +235,63 @@ export default function AgentDashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Plus className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="font-semibold">Cash In</h3>
-              <p className="text-sm text-muted-foreground">Add money to user wallet</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/agent/cash-operations"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <Plus className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="font-semibold">Cash In</h3>
+                <p className="text-sm text-muted-foreground">
+                  Add money to user wallet
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <Minus className="h-6 w-6 text-red-600" />
-              </div>
-              <h3 className="font-semibold">Cash Out</h3>
-              <p className="text-sm text-muted-foreground">Withdraw from user wallet</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/agent/cash-operations"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                  <Minus className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold">Cash Out</h3>
+                <p className="text-sm text-muted-foreground">
+                  Withdraw from user wallet
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-              <h3 className="font-semibold">Commission</h3>
-              <p className="text-sm text-muted-foreground">View earnings history</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/agent/commission"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold">Commission</h3>
+                <p className="text-sm text-muted-foreground">
+                  View earnings history
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle className="h-6 w-6 text-purple-600" />
-              </div>
-              <h3 className="font-semibold">Transactions</h3>
-              <p className="text-sm text-muted-foreground">View all transactions</p>
-            </CardContent>
-          </Card>
+          <Link to={"/dashboard/agent/transactions"}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="h-6 w-6 text-purple-600" />
+                </div>
+                <h3 className="font-semibold">Transactions</h3>
+                <p className="text-sm text-muted-foreground">
+                  View all transactions
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }
