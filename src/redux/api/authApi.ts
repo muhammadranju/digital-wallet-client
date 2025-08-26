@@ -1,33 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { User } from "../slices/authSlice";
 import { BASE_URL } from "@/lib/Base_URL";
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  role: "user" | "agent";
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
-  message: string;
-}
+import type {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+} from "@/types/authApi.interface";
 
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${BASE_URL}/auth`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token;
+      const token = localStorage.getItem("token");
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
@@ -36,13 +21,6 @@ export const authApi = createApi({
   }),
   tagTypes: ["Auth"],
   endpoints: (builder) => ({
-    login: builder.mutation<AuthResponse, LoginRequest>({
-      query: (credentials) => ({
-        url: "/login",
-        method: "POST",
-        body: credentials,
-      }),
-    }),
     register: builder.mutation<AuthResponse, RegisterRequest>({
       query: (userData) => ({
         url: "/register",
@@ -50,42 +28,39 @@ export const authApi = createApi({
         body: userData,
       }),
     }),
-    logout: builder.mutation<{ message: string }, void>({
-      query: () => ({
-        url: "/logout",
+    login: builder.mutation<AuthResponse, LoginRequest>({
+      query: (credentials) => ({
+        url: "/login",
         method: "POST",
+        body: credentials,
       }),
     }),
-    getProfile: builder.query<User, void>({
-      query: () => "/profile",
-      providesTags: ["Auth"],
-    }),
-    updateProfile: builder.mutation<User, Partial<User>>({
-      query: (updates) => ({
-        url: "/profile",
-        method: "PUT",
-        body: updates,
+    resetPassword: builder.mutation<
+      { message: string },
+      { email: string; password: string }
+    >({
+      query: (data) => ({
+        url: "/reset-password",
+        method: "POST",
+        body: data,
       }),
-      invalidatesTags: ["Auth"],
     }),
     changePassword: builder.mutation<
       { message: string },
-      { currentPassword: string; newPassword: string }
+      { currentPassword: string; newPassword: string; confirmPassword: string }
     >({
-      query: (passwords) => ({
+      query: (passwordData) => ({
         url: "/change-password",
-        method: "PUT",
-        body: passwords,
+        method: "POST",
+        body: passwordData,
       }),
     }),
   }),
 });
 
 export const {
-  useLoginMutation,
   useRegisterMutation,
-  useLogoutMutation,
-  useGetProfileQuery,
-  useUpdateProfileMutation,
+  useLoginMutation,
+  useResetPasswordMutation,
   useChangePasswordMutation,
 } = authApi;

@@ -1,60 +1,47 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { BASE_URL } from "@/lib/Base_URL";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-export interface WalletBalance {
-  balance: number;
-  currency: string;
-  lastUpdated: string;
-}
-
-export interface DepositRequest {
-  amount: number;
-  agentId: string;
-  method: "cash" | "bank";
-}
-
-export interface WithdrawRequest {
-  amount: number;
-  agentId?: string;
-  method: "cash" | "bank";
-}
-
-export interface SendMoneyRequest {
-  recipientId: string;
-  amount: number;
-  note?: string;
-}
+import { BASE_URL } from "@/lib/Base_URL";
+import type {
+  DepositRequest,
+  WithdrawRequest,
+  SendMoneyRequest,
+  WalletBalance,
+} from "@/types/walletApi.interface";
 
 export const walletApi = createApi({
   reducerPath: "walletApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${BASE_URL}/wallet`,
+    baseUrl: `${BASE_URL}/wallets`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token;
+      const token = localStorage.getItem("token");
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ["Wallet"],
+  tagTypes: ["Wallet", "Transaction"],
   endpoints: (builder) => ({
+    // Get wallet balance
     getBalance: builder.query<WalletBalance, void>({
-      query: () => "/balance",
-      providesTags: ["Wallet"],
+      query: () => "/me",
+      providesTags: ["Wallet", "Transaction"],
     }),
+
+    // Deposit money
     deposit: builder.mutation<
       { message: string; transactionId: string },
       DepositRequest
     >({
       query: (depositData) => ({
-        url: "/deposit",
+        url: "/send-money",
         method: "POST",
         body: depositData,
       }),
-      invalidatesTags: ["Wallet"],
+      invalidatesTags: ["Transaction", "Wallet"],
     }),
+
+    // Withdraw money
     withdraw: builder.mutation<
       { message: string; transactionId: string },
       WithdrawRequest
@@ -64,8 +51,10 @@ export const walletApi = createApi({
         method: "POST",
         body: withdrawData,
       }),
-      invalidatesTags: ["Wallet"],
+      invalidatesTags: ["Transaction", "Wallet"],
     }),
+
+    // Send money
     sendMoney: builder.mutation<
       { message: string; transactionId: string },
       SendMoneyRequest
@@ -75,7 +64,24 @@ export const walletApi = createApi({
         method: "POST",
         body: sendData,
       }),
-      invalidatesTags: ["Wallet"],
+      invalidatesTags: ["Transaction", "Wallet"],
+    }),
+
+    // Block wallet
+    blockWallet: builder.mutation<WalletBalance, string>({
+      query: (walletId) => ({
+        url: `/block/${walletId}`,
+        method: "PATCH",
+      }),
+    }),
+
+    // Unblock wallet
+    unblockWallet: builder.mutation<WalletBalance, string>({
+      query: (walletId) => ({
+        url: `/unblock/${walletId}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Transaction", "Wallet"],
     }),
   }),
 });
@@ -85,4 +91,6 @@ export const {
   useDepositMutation,
   useWithdrawMutation,
   useSendMoneyMutation,
+  useBlockWalletMutation,
+  useUnblockWalletMutation,
 } = walletApi;

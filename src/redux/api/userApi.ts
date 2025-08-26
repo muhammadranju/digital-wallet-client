@@ -1,29 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { BASE_URL } from "@/lib/Base_URL";
+// import type { User } from "@/types/userApi.interface";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { User } from "../slices/authSlice";
-import { BASE_URL } from "@/lib/Base_URL";
-
-export interface UserFilters {
-  role?: string;
-  status?: string;
-  search?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface UsersResponse {
-  users: User[];
-  total: number;
-  page: number;
-  totalPages: number;
-}
 
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${BASE_URL}/users`,
+    baseUrl: `${BASE_URL}/user`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token;
+      const token = localStorage.getItem("token");
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
@@ -32,40 +18,30 @@ export const userApi = createApi({
   }),
   tagTypes: ["User"],
   endpoints: (builder) => ({
-    getUsers: builder.query<UsersResponse, UserFilters>({
-      query: (filters) => {
-        const params = new URLSearchParams();
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value !== undefined) {
-            params.append(key, value.toString());
-          }
-        });
-        return `?${params.toString()}`;
-      },
-      providesTags: ["User"],
+    getProfile: builder.query<User, void>({
+      query: () => "/profile",
     }),
-    getUserById: builder.query<User, string>({
-      query: (id) => `/${id}`,
-      providesTags: ["User"],
+    getAgents: builder.query<User, void>({
+      query: () => "/agents",
     }),
-    updateUserStatus: builder.mutation<User, { id: string; status: string }>({
-      query: ({ id, status }) => ({
-        url: `/${id}/status`,
-        method: "PUT",
-        body: { status },
+    approveUser: builder.mutation<User, string>({
+      query: (userId) => ({
+        url: `/approve/${userId}`,
+        method: "PATCH",
       }),
-      invalidatesTags: ["User"],
     }),
-    searchUsers: builder.query<User[], string>({
-      query: (searchTerm) => `/search?q=${searchTerm}`,
-      providesTags: ["User"],
+    suspendUser: builder.mutation<User, string>({
+      query: (userId) => ({
+        url: `/suspend/${userId}`,
+        method: "PATCH",
+      }),
     }),
   }),
 });
 
 export const {
-  useGetUsersQuery,
-  useGetUserByIdQuery,
-  useUpdateUserStatusMutation,
-  useSearchUsersQuery,
+  useGetProfileQuery,
+  useApproveUserMutation,
+  useSuspendUserMutation,
+  useGetAgentsQuery
 } = userApi;
