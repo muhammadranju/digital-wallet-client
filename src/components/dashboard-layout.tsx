@@ -1,4 +1,4 @@
-import type React from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { logout } from "@/redux/slices/authSlice";
 import {
   Bell,
   CreditCard,
   Home,
+  HomeIcon,
   LogOut,
   Menu,
   Search,
@@ -25,8 +27,11 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -86,9 +91,9 @@ const roleColors = {
 };
 
 const roleLabels = {
-  user: "User",
-  agent: "Agent",
-  admin: "Admin",
+  user: "user",
+  agent: "agent",
+  admin: "admin",
 };
 
 export function DashboardLayout({
@@ -100,6 +105,8 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const userData = localStorage.getItem("userData");
+  const userInfo = JSON.parse(userData as string);
 
   const [activeItem, setActiveItem] = useState(location.pathname);
 
@@ -108,7 +115,32 @@ export function DashboardLayout({
     setActiveItem(location.pathname);
   }, [location.pathname]);
 
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("isAuthenticated");
+    toast.success("You have been logged out successfully");
+    navigate("/auth/login");
+  };
+
   const navItems = navigationItems[userRole];
+  // const navItems =
+  //   navigationItems[
+  //     userRole === "USER" ? "user" : userRole === "AGENT" ? "agent" : "admin"
+  //   ];
+
+  const navigateWithRole = (href: string) => {
+    if (userRole === "user") {
+      navigate(`/dashboard/user${href}`);
+    } else if (userRole === "agent") {
+      navigate(`/dashboard/agent${href}`);
+    } else if (userRole === "admin") {
+      navigate(`/dashboard/admin${href}`);
+    }
+  };
 
   const Sidebar = ({ className = "" }: { className?: string }) => (
     <div className={`flex h-full flex-col bg-sidebar ${className}`}>
@@ -133,7 +165,7 @@ export function DashboardLayout({
       </Link>
 
       <nav className="flex-1 space-y-1 p-4">
-        {navItems.map((item) => {
+        {navItems?.map((item: any) => {
           const Icon = item.icon;
           const isActive = activeItem === item.href;
           return (
@@ -146,7 +178,7 @@ export function DashboardLayout({
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50"
               }`}
               onClick={() => {
-                navigate(item.href); // ✅ navigate
+                navigate(item.href);
               }}
             >
               <Icon className="h-4 w-4" />
@@ -205,14 +237,18 @@ export function DashboardLayout({
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={userAvatar || "/placeholder.svg"}
-                      alt={userName}
+                      src={
+                        userAvatar ||
+                        "https://cdn1.iconfinder.com/data/icons/user-pictures/100/male3-512.png"
+                      }
+                      alt={userInfo?.name || userName}
                     />
                     <AvatarFallback>
-                      {userName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {userInfo?.name ||
+                        userName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -221,24 +257,31 @@ export function DashboardLayout({
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {userName}
+                      {userInfo?.name || userName}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {userEmail}
+                      {userInfo?.email || userEmail}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem onClick={() => navigateWithRole("/")}>
+                  <HomeIcon className="mr-2 h-4 w-4" />
+                  <span>Dashboard</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
+                {userRole === "admin" ? (
+                  <DropdownMenuItem
+                    onClick={() => navigateWithRole("/settings")}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                ) : (
+                  ""
+                )}
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

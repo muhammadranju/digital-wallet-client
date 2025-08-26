@@ -1,15 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
-import type React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Users,
-  CreditCard,
   Activity,
+  CreditCard,
+  DollarSign,
+  TrendingDown,
+  TrendingUp,
+  Users,
 } from "lucide-react";
+import type React from "react";
 
 interface StatCardProps {
   title: string;
