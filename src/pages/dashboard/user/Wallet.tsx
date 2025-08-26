@@ -1,10 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,44 +22,122 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DollarSign, Plus, Minus, Send, Search, User } from "lucide-react";
+import {
+  useAddMoneyMutation,
+  useSendMoneyMutation,
+  useWithdrawMoneyMutation,
+} from "@/redux/api/transactionApi";
+import { useGetAgentsQuery } from "@/redux/api/userApi";
+import { useGetBalanceQuery } from "@/redux/api/walletApi";
+import type { DepositRequest } from "@/types/walletApi.interface";
+import {
+  DollarSign,
+  Loader,
+  Minus,
+  Plus,
+  Search,
+  Send,
+  User,
+} from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function WalletPage() {
-  const [depositAmount, setDepositAmount] = useState("");
+  const [depositAmount, setDepositAmount] = useState<string>("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [openSendMoney, setOpenSendMoney] = useState(false);
+  const [openWithdraw, setOpenWithdraw] = useState(false);
 
-  // Mock user search results
-  const searchResults = [
-    {
-      id: "1",
-      name: "Sarah Johnson",
-      email: "sarah@example.com",
-      phone: "+1234567890",
-    },
-    {
-      id: "2",
-      name: "Mike Chen",
-      email: "mike@example.com",
-      phone: "+1234567891",
-    },
-    {
-      id: "3",
-      name: "Emma Davis",
-      email: "emma@example.com",
-      phone: "+1234567892",
-    },
-  ];
+  const { data, isLoading, refetch } = useGetBalanceQuery();
+  const [deposit, { isLoading: isDepositLoading }] = useAddMoneyMutation();
+  const [withdraw, { isLoading: isWithdrawLoading }] =
+    useWithdrawMoneyMutation();
+  const [sendMoney, { isLoading: isSendMoneyLoading }] = useSendMoneyMutation();
 
-  const filteredResults = searchResults.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone.includes(searchQuery)
-  );
+  const { data: agentsData } = useGetAgentsQuery();
+  const balance = data?.data;
+  const agents = agentsData?.data;
+
+  // Define searchResults (Mock data or replace it with an API call)
+
+  const filteredResults = Array.isArray(agents)
+    ? agents.filter(
+        (user: any) =>
+          user.name.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+          user.contact?.includes(searchQuery)
+      )
+    : [];
+
+  const handleDeposit = () => {
+    const newDepositAmount = parseFloat(depositAmount);
+    if (isNaN(newDepositAmount)) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    const depositRequest: DepositRequest = {
+      amount: newDepositAmount,
+      agentId: "1", // Replace with actual agent ID or source
+      method: "cash", // Define the method
+    };
+
+    deposit(depositRequest)
+      .unwrap()
+      .then(() => {
+        toast.success("Deposit successful");
+        setDepositAmount("");
+        refetch();
+        setOpen(false);
+      })
+      .catch(() => {
+        toast.error("Failed to make the deposit");
+      });
+  };
+
+  const handleWithdraw = () => {
+    const newWithdrawAmount = parseFloat(withdrawAmount);
+    if (isNaN(newWithdrawAmount)) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    withdraw({ amount: newWithdrawAmount })
+      .unwrap()
+      .then(() => {
+        toast.success("Withdrawal successful");
+        refetch();
+        setWithdrawAmount("");
+        setOpenWithdraw(false);
+      })
+      .catch(() => {
+        toast.error("Failed to make the withdrawal");
+      });
+  };
+
+  const handleSendMoney = () => {
+    if (!recipient || !sendAmount) {
+      toast.error("Please fill in the recipient and amount fields");
+      return;
+    }
+
+    console.log(recipient);
+    sendMoney({ contact: recipient, amount: parseFloat(sendAmount) })
+      .unwrap()
+      .then(() => {
+        toast.success("Money sent successfully");
+        refetch();
+        setSendAmount("");
+        setOpenSendMoney(false);
+      })
+      .catch(() => {
+        toast.error("Failed to send money");
+      });
+  };
 
   return (
     <DashboardLayout userRole="user">
@@ -79,8 +158,20 @@ export default function WalletPage() {
                 <p className="text-sm text-muted-foreground">
                   Available Balance
                 </p>
-                <p className="text-4xl font-bold text-foreground">$2,450.00</p>
-                <div className="flex items-center gap-2 mt-2">
+                {/* $ */}
+                <p className="text-4xl font-bold text-foreground">
+                  {isLoading ? (
+                    <NumberTicker
+                      value={10013570}
+                      decimalPlaces={1}
+                      className="whitespace-pre-wrap text-4xl font-bold tracking-tighter text-black dark:text-white"
+                    />
+                  ) : (
+                    balance?.balance
+                  )}
+                  $
+                </p>
+                <div className="flex items-center gap-2 mt-2 sr-only">
                   <Badge
                     variant="secondary"
                     className="text-green-600 bg-green-50"
@@ -99,7 +190,7 @@ export default function WalletPage() {
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-3">
           {/* Deposit Money */}
-          <Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="p-6 text-center">
@@ -147,14 +238,22 @@ export default function WalletPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline">Cancel</Button>
-                <Button>Request Deposit</Button>
+                <Button onClick={() => setOpen(false)} variant="outline">
+                  Cancel
+                </Button>
+                <Button onClick={handleDeposit}>
+                  {isDepositLoading ? (
+                    <Loader className="mr-2 h-4 w-4" />
+                  ) : (
+                    "Request Deposit"
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
           {/* Withdraw Money */}
-          <Dialog>
+          <Dialog open={openWithdraw} onOpenChange={setOpenWithdraw}>
             <DialogTrigger asChild>
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="p-6 text-center">
@@ -184,33 +283,28 @@ export default function WalletPage() {
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Available: $2,450.00
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="withdrawal-method">Withdrawal Method</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="agent">Agent Cash-out</SelectItem>
-                      <SelectItem value="bank">Bank Transfer</SelectItem>
-                      <SelectItem value="atm">ATM Withdrawal</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline">Cancel</Button>
-                <Button>Withdraw</Button>
+                <Button
+                  onClick={() => setOpenWithdraw(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleWithdraw}>
+                  {isWithdrawLoading ? (
+                    <Loader className="mr-2 h-4 w-4" />
+                  ) : (
+                    "Withdraw"
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
           {/* Send Money */}
-          <Dialog>
+          <Dialog open={openSendMoney} onOpenChange={setOpenSendMoney}>
             <DialogTrigger asChild>
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="p-6 text-center">
@@ -232,7 +326,7 @@ export default function WalletPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                <div>
+                <div className="w-full">
                   <Label htmlFor="recipient-search">Search Recipient</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -254,7 +348,7 @@ export default function WalletPage() {
                         key={user.id}
                         className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer"
                         onClick={() => {
-                          setRecipient(user.name);
+                          setRecipient(user.contact);
                           setSearchQuery("");
                         }}
                       >
@@ -265,6 +359,9 @@ export default function WalletPage() {
                           <p className="text-sm font-medium">{user.name}</p>
                           <p className="text-xs text-muted-foreground">
                             {user.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.contact}
                           </p>
                         </div>
                       </div>
@@ -292,58 +389,27 @@ export default function WalletPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline">Cancel</Button>
-                <Button disabled={!recipient || !sendAmount}>Send Money</Button>
+                <Button
+                  onClick={() => setOpenSendMoney(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSendMoney}
+                  disabled={!recipient || !sendAmount}
+                  // loading={isSendMoneyLoading}
+                >
+                  {isSendMoneyLoading ? (
+                    <Loader className="mr-2 h-4 w-4" />
+                  ) : (
+                    "Send Money"
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <Plus className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Deposit Request</p>
-                    <p className="text-sm text-muted-foreground">
-                      Downtown Branch - 2 hours ago
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-green-600">+$500.00</p>
-                  <Badge variant="secondary">Pending</Badge>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Send className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Sent to Sarah Johnson</p>
-                    <p className="text-sm text-muted-foreground">
-                      Yesterday at 3:45 PM
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-red-600">-$250.00</p>
-                  <Badge>Completed</Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

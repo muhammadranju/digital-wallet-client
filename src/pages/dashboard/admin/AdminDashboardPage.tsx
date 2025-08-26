@@ -15,7 +15,9 @@ import {
   Activity,
   Clock,
 } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useEffect } from "react";
+import HelmetTitle from "@/components/layout/HelmetTitle";
 
 // Mock recent admin activity data
 const recentActivity = [
@@ -83,6 +85,17 @@ const systemMetrics = [
 ];
 
 export default function AdminDashboardPage() {
+  const navigate = useNavigate();
+  const userInfo = localStorage.getItem("userData");
+  const user = JSON.parse(userInfo as string);
+  useEffect(() => {
+    if (localStorage.getItem("userRole") !== "ADMIN") {
+      navigate("/");
+    } else if (localStorage.getItem("isAuthenticated") !== "true") {
+      navigate("/auth/login");
+    }
+  }, [navigate]);
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "high":
@@ -113,10 +126,11 @@ export default function AdminDashboardPage() {
 
   return (
     <DashboardLayout
-      userRole="admin"
-      userName="Admin User"
-      userEmail="admin@example.com"
+      userRole={user.role.toLowerCase()}
+      userName={user.name}
+      userEmail={user.email}
     >
+      <HelmetTitle title="Admin Dashboard" />
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

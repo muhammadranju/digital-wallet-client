@@ -1,3 +1,4 @@
+import HelmetTitle from "@/components/layout/HelmetTitle";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,6 +33,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <HelmetTitle title="Forgot Password" />
       <div className="w-full max-w-md space-y-6">
         {/* Logo/Brand */}
         <div className="text-center">

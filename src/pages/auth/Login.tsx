@@ -1,5 +1,8 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type React from "react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,59 +16,77 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useLoginMutation } from "@/redux/api/authApi";
+import { setCredentials } from "@/redux/slices/authSlice";
 import { Eye, EyeOff, Lock, Mail, Wallet } from "lucide-react";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-// import Link from "next/link"
-// import { useRouter } from "next/navigation"
+import { toast } from "sonner";
+import HelmetTitle from "@/components/layout/HelmetTitle";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useNavigate();
+
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    // Simulate login process
-    setTimeout(() => {
-      // Store user role in localStorage for demo purposes
-      localStorage.setItem("userRole", role);
+    // Proceed only if both email and password are filled
+    if (!email || !password) return; // Return early if validation fails
+
+    try {
+      const result = await login({ email, password }).unwrap();
+
+      // Dispatch credentials to Redux store
+      dispatch(
+        setCredentials({ user: result.data.user, token: result.data.token })
+      );
+
+      const userData = {
+        id: result?.data?.id,
+        email: result?.data.email,
+        name: result?.data.name,
+        contact: result?.data.contact,
+        location: result?.data.location,
+        role: result?.data.role,
+      };
+      // Store in localStorage for persistence
+      localStorage.setItem("token", result?.data.token);
+      localStorage.setItem("userRole", result?.data.role);
+      localStorage.setItem("userData", JSON.stringify(userData));
       localStorage.setItem("isAuthenticated", "true");
 
       // Redirect based on role
-      switch (role) {
-        case "user":
-          router("/");
+      switch (result.data.role) {
+        case "USER":
+          navigate("/dashboard/user");
+          toast.success(`Welcome Back! ${result.data.name}`);
           break;
-        case "agent":
-          router("/agent");
+        case "AGENT":
+          navigate("/dashboard/agent");
+          toast.success(`Welcome Back! ${result.data.name}`);
           break;
-        case "admin":
-          router("/admin");
+        case "ADMIN":
+          navigate("/dashboard/admin");
+          toast.success(`Welcome Back! ${result.data.name}`);
           break;
         default:
-          router("/");
+          navigate("/");
       }
-      setIsLoading(false);
-    }, 1500);
+    } catch (error: any) {
+      console.log(error);
+      console.error("Login failed:", error?.data?.message || error.message);
+      toast.error(error?.data?.message || "Login failed");
+    }
   };
 
   const demoCredentials = [
-    { role: "user", email: "user@demo.com", password: "demo123" },
-    { role: "agent", email: "agent@demo.com", password: "demo123" },
-    { role: "admin", email: "admin@demo.com", password: "demo123" },
+    { role: "user", email: "user@demo.com", password: "demo1234" },
+    { role: "agent", email: "agent@demo.com", password: "demo1234" },
+    { role: "admin", email: "admin@demo.com", password: "demo1234" },
   ];
 
   const fillDemoCredentials = (demoRole: string) => {
@@ -73,12 +94,12 @@ export default function LoginPage() {
     if (creds) {
       setEmail(creds.email);
       setPassword(creds.password);
-      setRole(demoRole);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <HelmetTitle title="Login" />
       <div className="w-full max-w-md space-y-6">
         {/* Logo/Brand */}
         <div className="text-center">
@@ -144,24 +165,10 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="role">Login As</Label>
-                <Select value={role} onValueChange={setRole} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="agent">Agent</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !role}
+                disabled={isLoading || !email || !password} // Button disabled if email or password is empty
               >
                 {isLoading ? "Signing In..." : "Sign In"}
               </Button>

@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Check, X, ArrowRight, Users, Building, Crown } from "lucide-react";
 import { Link } from "react-router";
+import HelmetTitle from "@/components/layout/HelmetTitle";
 
 export default function PricingPage() {
   const plans = [
@@ -143,6 +144,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <HelmetTitle title="Pricing" />
       {/* Hero Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-primary/5 to-secondary/5">
         <div className="container mx-auto text-center">

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import HelmetTitle from "@/components/layout/HelmetTitle";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,28 +19,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Eye, EyeOff, Lock, Mail, Phone, User, Wallet } from "lucide-react";
+import { useRegisterMutation } from "@/redux/api/authApi";
+import { setCredentials } from "@/redux/slices/authSlice";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+  Wallet,
+} from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
-// import Link from "next/link"
-// import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
+    contact: "",
+    location: "",
     password: "",
     confirmPassword: "",
     role: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  // const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const router = useNavigate();
+  const dispatch = useDispatch();
+  const [registerUser] = useRegisterMutation();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -50,39 +66,58 @@ export default function SignupPage() {
       alert("Passwords do not match");
       return;
     }
-    // if (!acceptTerms) {
-    //   alert("Please accept the terms and conditions");
-    //   return;
-    // }
 
     setIsLoading(true);
 
-    // Simulate signup process
-    setTimeout(() => {
-      // Store user role in localStorage for demo purposes
-      localStorage.setItem("userRole", formData.role);
-      localStorage.setItem("isAuthenticated", "true");
+    try {
+      console.log({
+        name: `${formData.firstName} ${formData.lastName}`,
+        contact: formData.contact,
+        location: formData.location,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
 
-      // Redirect based on role
-      switch (formData.role) {
-        case "user":
-          router("/");
+      const res = await registerUser({
+        name: `${formData.firstName} ${formData.lastName}`,
+        contact: formData.contact,
+        location: formData.location,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      }).unwrap();
+
+      // Save credentials
+      if (res.data.token) {
+        dispatch(setCredentials(res.data));
+        localStorage.setItem("token", res.data.token);
+      }
+
+      // Redirect by role
+      switch (res.data.role) {
+        case "USER":
+          router("/dashboard/user");
           break;
-        case "agent":
-          router("/agent");
+        case "AGENT":
+          router("/dashboard/agent");
           break;
-        case "admin":
-          router("/admin");
+        case "ADMIN":
+          router("/dashboard/admin");
           break;
         default:
           router("/");
       }
+    } catch (error: any) {
+      alert(error?.data?.message || "Registration failed");
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <HelmetTitle title="Signup" />
       <div className="w-full max-w-md space-y-6">
         {/* Logo/Brand */}
         <div className="text-center">
@@ -101,6 +136,7 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
+              {/* Name */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <Label htmlFor="firstName">First Name</Label>
@@ -136,6 +172,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {/* Email */}
               <div>
                 <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
@@ -152,22 +189,45 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {/* Phone */}
               <div>
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="contact">Contact Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="phone"
+                    id="contact"
                     type="tel"
-                    placeholder="Enter your phone number"
+                    placeholder="Enter your contact number"
                     className="pl-10"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    value={formData.contact}
+                    onChange={(e) =>
+                      handleInputChange("contact", e.target.value)
+                    }
                     required
                   />
                 </div>
               </div>
 
+              {/* Location */}
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="location"
+                    type="text"
+                    placeholder="Enter your location"
+                    className="pl-10"
+                    value={formData.location}
+                    onChange={(e) =>
+                      handleInputChange("location", e.target.value)
+                    }
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Role */}
               <div>
                 <Label htmlFor="role">Account Type</Label>
                 <Select
@@ -179,12 +239,13 @@ export default function SignupPage() {
                     <SelectValue placeholder="Select account type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user">Personal Account</SelectItem>
-                    <SelectItem value="agent">Agent Account</SelectItem>
+                    <SelectItem value="USER">Personal Account</SelectItem>
+                    <SelectItem value="AGENT">Agent Account</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Password */}
               <div>
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -216,6 +277,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {/* Confirm Password */}
               <div>
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <div className="relative">
@@ -247,12 +309,9 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {/* Terms */}
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="terms"
-                  // checked={acceptTerms}
-                  // onCheckedChange={setAcceptTerms}
-                />
+                <Checkbox id="terms" required />
                 <Label htmlFor="terms" className="text-sm">
                   I agree to the{" "}
                   <Link to="/terms" className="text-primary hover:underline">
@@ -265,11 +324,7 @@ export default function SignupPage() {
                 </Label>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                // disabled={isLoading || !acceptTerms}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>

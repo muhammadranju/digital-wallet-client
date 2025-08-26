@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, Heart, Zap } from "lucide-react";
 import { Link } from "react-router";
+import HelmetTitle from "@/components/layout/HelmetTitle";
 
 export default function About() {
   const teamMembers = [
@@ -87,8 +88,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* <Navbar /> */}
-
+      <HelmetTitle title="About" />
       {/* Hero Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-primary/5 to-secondary/5">
         <div className="container mx-auto text-center">

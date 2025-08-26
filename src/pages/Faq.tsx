@@ -25,6 +25,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Link } from "react-router";
+import HelmetTitle from "@/components/layout/HelmetTitle";
 
 export default function FAQPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,6 +144,7 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <HelmetTitle title="FAQ" />
       {/* <Navbar /> */}
 
       {/* Hero Section */}

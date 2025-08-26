@@ -1,9 +1,5 @@
-import type React from "react";
-import { useState } from "react";
+import HelmetTitle from "@/components/layout/HelmetTitle";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -11,6 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -18,18 +16,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  MessageSquare,
-  Headphones,
-  FileText,
-  CheckCircle,
-  Loader2,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import {
+  CheckCircle,
+  Clock,
+  FileText,
+  Headphones,
+  Loader2,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 
 export default function Contact() {
@@ -120,6 +121,7 @@ export default function Contact() {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-background">
+        <HelmetTitle title="Contact Us" />
         {/* <Navbar /> */}
         <div className="min-h-[80vh] flex items-center justify-center px-4">
           <Card className="w-full max-w-md text-center">

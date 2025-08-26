@@ -1,3 +1,4 @@
+import HelmetTitle from "@/components/layout/HelmetTitle";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +21,7 @@ import { Link } from "react-router";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
+      <HelmetTitle title="Home" />
       {/* <Navbar /> */}
 
       {/* Hero Section */}

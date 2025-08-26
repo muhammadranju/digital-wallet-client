@@ -1,14 +1,14 @@
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { StatCard, userStats } from "@/components/dashboard-stats";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Send,
+  ArrowDownRight,
+  ArrowUpRight,
   Download,
   Plus,
-  ArrowUpRight,
-  ArrowDownRight,
+  Send,
 } from "lucide-react";
 // import { useAuth } from "@/components/auth-provider";
 
@@ -49,7 +49,7 @@ const recentTransactions = [
 ];
 
 export default function UserDashboardPage() {
-  // const { userRole } = useAuth();
+
 
   return (
     <DashboardLayout userRole={"user"}>
