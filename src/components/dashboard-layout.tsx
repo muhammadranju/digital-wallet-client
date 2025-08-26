@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useGetProfileQuery } from "@/redux/api/userApi";
 import { logout } from "@/redux/slices/authSlice";
 import {
   Bell,
@@ -21,7 +22,7 @@ import {
   Menu,
   Search,
   Settings,
-  TrendingUp,
+  // TrendingUp,
   User,
   UserCheck,
   Users,
@@ -31,6 +32,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router";
+import Cookie from "js-cookie";
 import { toast } from "sonner";
 
 interface DashboardLayoutProps {
@@ -64,11 +66,11 @@ const navigationItems = {
       label: "Transactions",
       href: "/dashboard/agent/transactions",
     },
-    {
-      icon: TrendingUp,
-      label: "Commission",
-      href: "/dashboard/agent/commission",
-    },
+    // {
+    //   icon: TrendingUp,
+    //   label: "Commission",
+    //   href: "/dashboard/agent/commission",
+    // },
     { icon: User, label: "Profile", href: "/dashboard/agent/profile" },
   ],
   admin: [
@@ -101,14 +103,13 @@ export function DashboardLayout({
   userRole,
   userName = "John Doe",
   userEmail = "john@example.com",
-  userAvatar,
 }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const userData = localStorage.getItem("userData");
-  const userInfo = JSON.parse(userData as string);
-
+  const { data, isLoading } = useGetProfileQuery();
   const [activeItem, setActiveItem] = useState(location.pathname);
+
+  const user = data?.data;
 
   // update activeItem whenever route changes
   useEffect(() => {
@@ -122,6 +123,8 @@ export function DashboardLayout({
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
     localStorage.removeItem("isAuthenticated");
+    Cookie.remove("token");
+    Cookie.remove("isAuthenticated");
     toast.success("You have been logged out successfully");
     navigate("/auth/login");
   };
@@ -221,11 +224,11 @@ export function DashboardLayout({
 
           {/* Header Actions */}
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="sr-only">
               <Search className="h-4 w-4" />
             </Button>
-
-            <Button variant="outline" size="icon">
+            <span className="text-xs ">Welcome Back! {user?.name}</span>
+            <Button variant="outline" size="icon" className="sr-only">
               <Bell className="h-4 w-4" />
             </Button>
 
@@ -236,15 +239,20 @@ export function DashboardLayout({
                   className="relative h-8 w-8 rounded-full"
                 >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={
-                        userAvatar ||
-                        "https://cdn1.iconfinder.com/data/icons/user-pictures/100/male3-512.png"
-                      }
-                      alt={userInfo?.name || userName}
-                    />
+                    {isLoading ? (
+                      <AvatarImage
+                        src={"/placeholder-logo.png"}
+                        alt={user?.name || userName}
+                      />
+                    ) : (
+                      <AvatarImage
+                        src={user?.image}
+                        alt={user?.name || userName}
+                      />
+                    )}
+
                     <AvatarFallback>
-                      {userInfo?.name ||
+                      {user?.name ||
                         userName
                           .split(" ")
                           .map((n) => n[0])
@@ -257,10 +265,10 @@ export function DashboardLayout({
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {userInfo?.name || userName}
+                      {user?.name || userName}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {userInfo?.email || userEmail}
+                      {user?.email || userEmail}
                     </p>
                   </div>
                 </DropdownMenuLabel>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,14 +16,18 @@ import { HomeIcon, LogOut, Menu, Settings, User, Wallet } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router";
 import { toast } from "sonner";
+import Cookie from "js-cookie";
+import { useGetProfileQuery } from "@/redux/api/userApi";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const user = { name: "John Doe", email: "john@example.com", role: "user" };
   const isUser = localStorage.getItem("userRole");
   const userInfo = JSON.parse(localStorage.getItem("userData") as string);
+  const { data } = useGetProfileQuery();
+  const user = data?.data;
 
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
+  const isAuthenticated =
+    Cookie.get("isAuthenticated") || localStorage.getItem("isAuthenticated");
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
@@ -86,14 +89,14 @@ export function Navbar() {
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={
-                          userInfo?.image ||
+                          user?.image ||
                           "https://cdn1.iconfinder.com/data/icons/user-pictures/100/male3-512.png"
                         }
-                        alt={userInfo?.name || user.name}
+                        alt={user?.name || user?.name}
                       />
                       <AvatarFallback>
                         {userInfo?.name ||
-                          user.name
+                          user?.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -106,10 +109,10 @@ export function Navbar() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {userInfo.name}
+                        {user?.name}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {userInfo.email}
+                        {user?.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -210,13 +213,13 @@ export function Navbar() {
                 <div className="flex items-center space-x-2 mb-4">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>
-                      {user.name.charAt(0).toUpperCase()}
+                      {user?.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-sm font-medium">{user?.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {user.email}
+                      {user?.email}
                     </p>
                   </div>
                 </div>
