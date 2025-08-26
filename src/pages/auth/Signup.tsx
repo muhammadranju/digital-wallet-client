@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { checkEmailProvider } from "@/lib/checkEmailProvider";
 import { useRegisterMutation } from "@/redux/api/authApi";
 import { setCredentials } from "@/redux/slices/authSlice";
 import {
@@ -35,6 +36,7 @@ import type React from "react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -51,6 +53,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const router = useNavigate();
   const dispatch = useDispatch();
@@ -63,22 +66,22 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
+    const isValidTLD = checkEmailProvider(formData.email);
 
+    console.log(isValidTLD);
+    if (!isValidTLD) {
+      setError(
+        "Invalid email provider. For example, 'gmail.com', 'yahoo.com', 'outlook.com', 'protonmail.com', 'icloud.com', 'hotmail.com', 'aol.com', 'mail.com', 'yandex.com'"
+      );
+      toast.error("Invalid email domain. Please use a valid top-level domain.");
+      return;
+    }
     setIsLoading(true);
 
     try {
-      console.log({
-        name: `${formData.firstName} ${formData.lastName}`,
-        contact: formData.contact,
-        location: formData.location,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-      });
-
       const res = await registerUser({
         name: `${formData.firstName} ${formData.lastName}`,
         contact: formData.contact,
@@ -87,29 +90,16 @@ export default function SignupPage() {
         password: formData.password,
         role: formData.role,
       }).unwrap();
-
+      console.log(res.data);
       // Save credentials
-      if (res.data.token) {
+      if (res?.success) {
+        router(`/auth/otp-verification/${res.data.email}`);
+        toast.success("Registration successful and OTP sent to your email");
         dispatch(setCredentials(res.data));
-        localStorage.setItem("token", res.data.token);
-      }
-
-      // Redirect by role
-      switch (res.data.role) {
-        case "USER":
-          router("/dashboard/user");
-          break;
-        case "AGENT":
-          router("/dashboard/agent");
-          break;
-        case "ADMIN":
-          router("/dashboard/admin");
-          break;
-        default:
-          router("/");
+        setError("");
       }
     } catch (error: any) {
-      alert(error?.data?.message || "Registration failed");
+      toast.error(error?.data?.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -186,6 +176,7 @@ export default function SignupPage() {
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
                   />
+                  <span className="text-red-500 text-xs">{error}</span>
                 </div>
               </div>
 
@@ -235,12 +226,14 @@ export default function SignupPage() {
                   onValueChange={(value) => handleInputChange("role", value)}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select account type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="USER">Personal Account</SelectItem>
-                    <SelectItem value="AGENT">Agent Account</SelectItem>
+                    <SelectItem value="USER">
+                      Personal Account - User
+                    </SelectItem>
+                    <SelectItem value="AGENT">Agent Account - Agent</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

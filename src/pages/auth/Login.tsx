@@ -22,6 +22,8 @@ import { Eye, EyeOff, Lock, Mail, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import HelmetTitle from "@/components/layout/HelmetTitle";
 
+import Cookies from "js-cookie";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,8 +54,12 @@ export default function LoginPage() {
         contact: result?.data.contact,
         location: result?.data.location,
         role: result?.data.role,
+        token: result?.data.token,
       };
       // Store in localStorage for persistence
+      Cookies.set("token", userData.token);
+      Cookies.set("isAuthenticated", "true");
+
       localStorage.setItem("token", result?.data.token);
       localStorage.setItem("userRole", result?.data.role);
       localStorage.setItem("userData", JSON.stringify(userData));
@@ -84,9 +90,9 @@ export default function LoginPage() {
   };
 
   const demoCredentials = [
-    { role: "user", email: "user@demo.com", password: "demo1234" },
-    { role: "agent", email: "agent@demo.com", password: "demo1234" },
-    { role: "admin", email: "admin@demo.com", password: "demo1234" },
+    { role: "user", email: "user@gmail.com", password: "demo1234" },
+    { role: "agent", email: "agent@gmail.com", password: "demo1234" },
+    { role: "admin", email: "admin@gmail.com", password: "demo1234" },
   ];
 
   const fillDemoCredentials = (demoRole: string) => {
