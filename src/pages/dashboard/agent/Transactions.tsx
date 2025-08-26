@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,61 +36,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
+import { useGetAllTransactionsQuery } from "@/redux/api/transactionApi";
+import TransactionsTableSkeletons from "../user/skeletons/TransactionsTableSkeletons";
 
-// Mock agent transaction data
-const agentTransactions = [
-  {
-    id: "AGT001",
-    type: "cash-in",
-    user: "Sarah Johnson",
-    amount: 500.0,
-    commission: 5.0,
-    date: "2024-01-15",
-    status: "completed",
-    location: "Downtown Branch",
-  },
-  {
-    id: "AGT002",
-    type: "cash-out",
-    user: "Mike Chen",
-    amount: 250.0,
-    commission: 2.5,
-    date: "2024-01-15",
-    status: "completed",
-    location: "Downtown Branch",
-  },
-  {
-    id: "AGT003",
-    type: "cash-in",
-    user: "Emma Davis",
-    amount: 1200.0,
-    commission: 12.0,
-    date: "2024-01-14",
-    status: "pending",
-    location: "Downtown Branch",
-  },
-  {
-    id: "AGT004",
-    type: "cash-out",
-    user: "John Smith",
-    amount: 75.0,
-    commission: 0.75,
-    date: "2024-01-13",
-    status: "completed",
-    location: "Downtown Branch",
-  },
-  {
-    id: "AGT005",
-    type: "cash-in",
-    user: "Alice Brown",
-    amount: 300.0,
-    commission: 3.0,
-    date: "2024-01-12",
-    status: "completed",
-    location: "Downtown Branch",
-  },
-];
-
+// Your existing data structure seems to contain correct fields, so we will use them directly
 export default function AgentTransactionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -97,18 +47,32 @@ export default function AgentTransactionsPage() {
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+
+  const itemsPerPage = 10;
+
+  const { data, isLoading } = useGetAllTransactionsQuery({
+    searchQuery,
+    typeFilter,
+    statusFilter,
+    dateFrom,
+    dateTo,
+  });
+
+  const transactions = data?.data || [];
 
   // Filter transactions
-  const filteredTransactions = agentTransactions.filter((transaction) => {
+  const filteredTransactions = transactions.filter((transaction: any) => {
     const matchesSearch =
-      transaction.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.id.toLowerCase().includes(searchQuery.toLowerCase());
+      transaction.wallet?.user?.name
+        ?.toLowerCase()
+        .includes(searchQuery?.toLowerCase()) ||
+      transaction._id?.toLowerCase().includes(searchQuery?.toLowerCase());
     const matchesType = typeFilter === "all" || transaction.type === typeFilter;
     const matchesStatus =
       statusFilter === "all" || transaction.status === statusFilter;
-    const matchesDateFrom = !dateFrom || new Date(transaction.date) >= dateFrom;
-    const matchesDateTo = !dateTo || new Date(transaction.date) <= dateTo;
+    const matchesDateFrom =
+      !dateFrom || new Date(transaction.createdAt) >= dateFrom;
+    const matchesDateTo = !dateTo || new Date(transaction.createdAt) <= dateTo;
 
     return (
       matchesSearch &&
@@ -118,6 +82,7 @@ export default function AgentTransactionsPage() {
       matchesDateTo
     );
   });
+  console.log(filteredTransactions);
 
   // Pagination
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
@@ -127,21 +92,12 @@ export default function AgentTransactionsPage() {
     startIndex + itemsPerPage
   );
 
-  // Calculate totals
-  const totalCommission = filteredTransactions.reduce(
-    (sum, t) => sum + t.commission,
-    0
-  );
-  const totalVolume = filteredTransactions.reduce(
-    (sum, t) => sum + t.amount,
-    0
-  );
-
+  // Get icon based on the transaction type
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case "cash-in":
+      case "CASH_IN":
         return <Plus className="h-4 w-4 text-green-600" />;
-      case "cash-out":
+      case "CASH_OUT":
         return <Minus className="h-4 w-4 text-red-600" />;
       default:
         return <DollarSign className="h-4 w-4 text-gray-600" />;
@@ -161,63 +117,14 @@ export default function AgentTransactionsPage() {
               View all transactions you've handled
             </p>
           </div>
-          <Button variant="outline" className="gap-2 bg-transparent">
+          <Button variant="outline" className="gap-2 bg-transparent sr-only">
             <Download className="h-4 w-4" />
             Export Report
           </Button>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Total Commission
-                  </p>
-                  <p className="text-2xl font-bold text-green-600">
-                    ${totalCommission.toFixed(2)}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Transaction Volume
-                  </p>
-                  <p className="text-2xl font-bold">
-                    ${totalVolume.toFixed(2)}
-                  </p>
-                </div>
-                <Plus className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Total Transactions
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {filteredTransactions.length}
-                  </p>
-                </div>
-                <Filter className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Filters */}
-        <Card>
+        <Card className="sr-only">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
@@ -244,8 +151,8 @@ export default function AgentTransactionsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="cash-in">Cash In</SelectItem>
-                  <SelectItem value="cash-out">Cash Out</SelectItem>
+                  <SelectItem value="CASH_IN">Cash In</SelectItem>
+                  <SelectItem value="CASH_OUT">Cash Out</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -308,110 +215,113 @@ export default function AgentTransactionsPage() {
         </Card>
 
         {/* Transactions Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Transactions ({filteredTransactions.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Transaction</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Commission</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-muted">
-                          {getTransactionIcon(transaction.type)}
+        {isLoading ? (
+          <TransactionsTableSkeletons />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Transactions ({transactions.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Transaction</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedTransactions.map((transaction: any) => (
+                    <TableRow key={transaction._id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-full bg-muted">
+                            {getTransactionIcon(transaction.type)}
+                          </div>
+                          <div>
+                            <p className="font-medium capitalize">
+                              {transaction.type.replace("_", " ")}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {transaction._id}
+                            </p>
+                          </div>
                         </div>
+                      </TableCell>
+                      <TableCell>
                         <div>
-                          <p className="font-medium capitalize">
-                            {transaction.type.replace("-", " ")}
+                          <p className="font-medium">
+                            {transaction.wallet.user.name}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {transaction.id}
+                            {transaction.wallet.user.email}
                           </p>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{transaction.user}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {transaction.location}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium">
-                        ${transaction.amount.toFixed(2)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium text-green-600">
-                        +${transaction.commission.toFixed(2)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(transaction.date), "MMM dd, yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          transaction.status === "completed"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {transaction.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium">
+                          ${transaction.amount.toFixed(2)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {format(
+                          new Date(transaction.createdAt),
+                          "MMM dd, yyyy"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            transaction.status === "COMPLETED"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {transaction.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to{" "}
-                {Math.min(
-                  startIndex + itemsPerPage,
-                  filteredTransactions.length
-                )}{" "}
-                of {filteredTransactions.length} transactions
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(
+                    startIndex + itemsPerPage,
+                    filteredTransactions.length
+                  )}{" "}
+                  of {filteredTransactions.length} transactions
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );
