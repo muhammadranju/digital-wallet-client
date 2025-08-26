@@ -160,7 +160,7 @@ export default function ProfilePage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditing(!isEditing)}
-                    className="bg-transparent"
+                    className="bg-transparent sr-only"
                   >
                     {isEditing ? "Cancel" : "Edit"}
                   </Button>

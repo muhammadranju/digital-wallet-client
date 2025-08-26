@@ -1,6 +1,6 @@
 const ProfileOverviewSkeletons = () => {
   return (
-    <div className="animate-pulse  border rounded-xl p-5 shadow">
+    <div className="animate-pulse  border rounded-xl p-5 shadow ">
       <div className="h-6 bg-gray-200 rounded mb-3" />
       <div className="space-y-6">
         <div className="flex flex-col items-center text-center">
@@ -24,6 +24,31 @@ const ProfileOverviewSkeletons = () => {
             </div>
           </div>
           <div className="flex items-center">
+            <div className="w-full h-4 bg-gray-200 rounded mr-3" />
+            <div className="w-full h-4 bg-gray-200 rounded mr-3" />
+            <div>
+              <div className="h-3 bg-gray-200 rounded mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+            </div>
+          </div>
+          <div className="flex items-center">
+            <div className="w-full h-4 bg-gray-200 rounded mr-3" />
+            <div className="w-full h-4 bg-gray-200 rounded mr-3" />
+            <div>
+              <div className="h-3 bg-gray-200 rounded mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+            </div>
+          </div>
+          <div className="flex items-center">
+            <div className="w-full h-4 bg-gray-200 rounded mr-3" />
+            <div className="w-full h-4 bg-gray-200 rounded mr-3" />
+            <div>
+              <div className="h-3 bg-gray-200 rounded mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+            </div>
+          </div>
+          <div className="flex items-center">
+            <div className="w-full h-4 bg-gray-200 rounded mr-3" />
             <div className="w-full h-4 bg-gray-200 rounded mr-3" />
             <div>
               <div className="h-3 bg-gray-200 rounded mb-2" />

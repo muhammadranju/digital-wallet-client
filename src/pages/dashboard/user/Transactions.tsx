@@ -135,7 +135,7 @@ export default function TransactionsPage() {
               View and manage all your transactions
             </p>
           </div>
-          <Button variant="outline" className="gap-2 bg-transparent">
+          <Button variant="outline" className="gap-2 bg-transparent sr-only">
             <Download className="h-4 w-4" />
             Export
           </Button>
