@@ -1,20 +1,26 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BASE_URL } from "@/lib/Base_URL";
 import type {
   TransactionResponse,
   TransactionFilters,
 } from "@/types/transactionApi.interface";
+// import type { RootState } from "@/store";
+// import { getAuthToken, asBearer } from "@/utils/authToken";
+import type { RootState } from "../store";
+import { asBearer, getAuthToken } from "@/lib/authToken";
 
 export const transactionApi = createApi({
   reducerPath: "transactionApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${BASE_URL}/transactions`,
+    // credentials: "include", // uncomment if you also want cookies sent automatically
     prepareHeaders: (headers, { getState }) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
+      const token = getAuthToken(getState() as RootState);
+      const bearer = asBearer(token);
+
+      if (bearer) headers.set("authorization", bearer);
+      else headers.delete("authorization");
+
       return headers;
     },
   }),
@@ -23,29 +29,29 @@ export const transactionApi = createApi({
     getAllTransactions: builder.query<TransactionResponse, TransactionFilters>({
       query: (filters) => {
         const params = new URLSearchParams();
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value !== undefined) {
-            params.append(key, value.toString());
+        Object.entries(filters ?? {}).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
           }
         });
         return `/me?${params.toString()}`;
       },
+      providesTags: ["Transaction", "Wallet"],
     }),
     addMoney: builder.mutation<
       { message: string; transactionId: string },
-      { amount: number }
+      { contact: string; amount: number }
     >({
       query: (data) => ({
         url: "/add-money",
         method: "POST",
         body: data,
       }),
-
       invalidatesTags: ["Transaction", "Wallet"],
     }),
     withdrawMoney: builder.mutation<
       { message: string; transactionId: string },
-      { amount: number }
+      { amount: number; contact: string }
     >({
       query: (data) => ({
         url: "/withdraw",
