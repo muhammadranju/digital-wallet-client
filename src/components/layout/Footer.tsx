@@ -5,8 +5,8 @@ import { LineShadowText } from "@/components/magicui/line-shadow-text";
 const Footer = () => {
   return (
     <footer className="border-t py-12 px-4">
-      <div className="container mx-auto">
-        <div className="grid md:grid-cols-4 gap-8">
+      <div className="container mx-auto relative">
+        <div className="grid md:grid-cols-4 gap-8 z-50">
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Wallet className="h-6 w-6 text-primary" />
@@ -77,14 +77,23 @@ const Footer = () => {
             </ul>
           </div>
         </div>
-        <div className="flex justify-center items-center lg:-my-16 ">
+        <div className="flex justify-center items-center lg:-my-16 z-0">
           <strong className="uppercase lg:text-[15em]  md:text-[8em] text-[40px] font-black">
             <LineShadowText>PayWallet</LineShadowText>
           </strong>
         </div>
         <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
           <p>
-            &copy; {new Date().getFullYear()} PayWallet. All rights reserved.
+            &copy; {new Date().getFullYear()} PayWallet. All rights reserved by{" "}
+            {""}{" "}
+            <a
+              href="https://www.mdranju.xyz"
+              className="font-bold hover:text-primary"
+              target="_blank"
+            >
+              Md. Ranju
+            </a>
+            .
           </p>
         </div>
       </div>

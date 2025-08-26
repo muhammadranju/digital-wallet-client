@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,14 +11,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { LogOut, Menu, Settings, User, Wallet } from "lucide-react";
-import { Link, NavLink } from "react-router";
+import { logout } from "@/redux/slices/authSlice";
 import { DialogTitle } from "@radix-ui/react-dialog"; // <- Required for accessibility
+import { HomeIcon, LogOut, Menu, Settings, User, Wallet } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { Link, NavLink, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const user = { name: "John Doe", email: "john@example.com", role: "user" };
+  const isUser = localStorage.getItem("userRole");
+  const userInfo = JSON.parse(localStorage.getItem("userData") as string);
 
+  const isAuthenticated = localStorage.getItem("isAuthenticated");
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
@@ -27,6 +33,20 @@ export function Navbar() {
     { href: "/contact", label: "Contact" },
     { href: "/faq", label: "FAQ" },
   ];
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userData");
+
+    toast.success("You have been logged out successfully");
+    navigate("/");
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,55 +74,108 @@ export function Navbar() {
         </div>
 
         {/* Desktop Auth Section */}
-        <div className="hidden md:flex items-center space-x-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+        <div className="hidden md:flex  items-center ">
+          {isAuthenticated === "true" && (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={
+                          userInfo?.image ||
+                          "https://cdn1.iconfinder.com/data/icons/user-pictures/100/male3-512.png"
+                        }
+                        alt={userInfo?.name || user.name}
+                      />
+                      <AvatarFallback>
+                        {userInfo?.name ||
+                          user.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {userInfo.name}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userInfo.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to={`${
+                        isUser === "USER"
+                          ? "/dashboard/user"
+                          : isUser === "AGENT"
+                          ? "/dashboard/agent"
+                          : "/dashboard/admin"
+                      }`}
+                      className="flex items-center"
+                    >
+                      <HomeIcon className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to={`${
+                        isUser === "USER"
+                          ? "/dashboard/user/profile"
+                          : isUser === "AGENT"
+                          ? "/dashboard/agent/profile"
+                          : "/dashboard/admin/settings"
+                      }`}
+                      className="flex items-center"
+                    >
+                      {isUser === "USER" || isUser === "AGENT" ? (
+                        <User className="mr-2 h-4 w-4" />
+                      ) : (
+                        <Settings className="mr-2 h-4 w-4" />
+                      )}
+                      {/* <Settings className="mr-2 h-4 w-4" /> */}
+                      {isUser === "USER" || isUser === "AGENT"
+                        ? "Profile"
+                        : "Settings"}
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+
+          {!isAuthenticated ? (
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" asChild>
+                <Link to="/auth/login">Sign In</Link>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard/user" className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  Dashboard
-                </Link>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard/user/profile" className="flex items-center">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" asChild>
-              <Link to="/auth/login">Sign In</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/auth/signup">Get Started</Link>
-            </Button>
-          </div>
+              <Button asChild>
+                <Link to="/auth/signup">Get Started</Link>
+              </Button>
+            </div>
+          ) : (
+            ""
+          )}
         </div>
 
         {/* Mobile Navigation */}
@@ -136,11 +209,15 @@ export function Navbar() {
               <div className="border-t pt-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
                   </div>
                 </div>
 

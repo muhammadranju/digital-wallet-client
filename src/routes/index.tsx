@@ -17,13 +17,16 @@ import AgentProfilePage from "@/pages/dashboard/agent/Profile";
 import AgentTransactionsPage from "@/pages/dashboard/agent/Transactions";
 import ProfilePage from "@/pages/dashboard/user/Profile";
 import TransactionsPage from "@/pages/dashboard/user/Transactions";
-import UserDashboardPage from "@/pages/dashboard/user/UserDashboardPage";
 import WalletPage from "@/pages/dashboard/user/Wallet";
 import FAQPage from "@/pages/Faq";
 import FeaturesPage from "@/pages/Features";
 import Home from "@/pages/Home";
 import PricingPage from "@/pages/Pricing";
 import { createBrowserRouter } from "react-router";
+import AdminRoute from "./AdminRoute";
+import AgentRoute from "./AgentRoute";
+import PrivateRoute from "./PrivateRoute";
+import UserRoute from "./UserRoute";
 
 export const router = createBrowserRouter([
   {
@@ -63,60 +66,148 @@ export const router = createBrowserRouter([
     path: "dashboard",
     children: [
       {
-        Component: UserDashboardPage,
+        Component: () => (
+          <PrivateRoute>
+            <UserRoute>
+              <WalletPage />
+            </UserRoute>
+          </PrivateRoute>
+        ),
+
         path: "user",
       },
       {
-        Component: ProfilePage,
+        Component: () => (
+          <PrivateRoute>
+            <UserRoute>
+              <ProfilePage />
+            </UserRoute>
+          </PrivateRoute>
+        ),
         path: "user/profile",
       },
       {
-        Component: TransactionsPage,
+        Component: () => (
+          <PrivateRoute>
+            <UserRoute>
+              <TransactionsPage />
+            </UserRoute>
+          </PrivateRoute>
+        ),
         path: "user/transactions",
       },
       {
-        Component: WalletPage,
+        Component: () => (
+          <PrivateRoute>
+            <UserRoute>
+              <WalletPage />
+            </UserRoute>
+          </PrivateRoute>
+        ),
 
         path: "user/wallet",
       },
       {
-        Component: AgentDashboardPage,
+        Component: () => (
+          <PrivateRoute>
+            <AgentRoute>
+              <AgentDashboardPage />
+            </AgentRoute>
+          </PrivateRoute>
+        ),
         path: "agent",
       },
       {
-        Component: CashOperationsPage,
+        Component: () => (
+          <PrivateRoute>
+            <AgentRoute>
+              <CashOperationsPage />
+            </AgentRoute>
+          </PrivateRoute>
+        ),
+
         path: "agent/cash-operations",
       },
       {
-        Component: AgentProfilePage,
+        Component: () => (
+          <PrivateRoute>
+            <AgentRoute>
+              <AgentProfilePage />
+            </AgentRoute>
+          </PrivateRoute>
+        ),
         path: "agent/profile",
       },
       {
-        Component: CommissionPage,
+        Component: () => (
+          <PrivateRoute>
+            <AgentRoute>
+              <CommissionPage />
+            </AgentRoute>
+          </PrivateRoute>
+        ),
         path: "agent/commission",
       },
       {
-        Component: AgentTransactionsPage,
+        Component: () => (
+          <PrivateRoute>
+            <AgentRoute>
+              <AgentTransactionsPage />
+            </AgentRoute>
+          </PrivateRoute>
+        ),
         path: "agent/transactions",
       },
       {
-        Component: AdminDashboardPage,
+        Component: () => (
+          <PrivateRoute>
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          </PrivateRoute>
+        ),
         path: "admin",
       },
       {
-        Component: AdminAgentsPage,
+        Component: () => (
+          <PrivateRoute>
+            <AdminRoute>
+              <AdminAgentsPage />
+            </AdminRoute>
+          </PrivateRoute>
+        ),
         path: "admin/agents",
       },
       {
-        Component: AdminUsersPage,
+        Component: () => (
+          <PrivateRoute>
+            <AdminRoute>
+              <AdminUsersPage />
+            </AdminRoute>
+          </PrivateRoute>
+        ),
+
         path: "admin/users",
       },
       {
-        Component: AdminSettingsPage,
+        Component: () => (
+          <PrivateRoute>
+            <AdminRoute>
+              <AdminSettingsPage />
+            </AdminRoute>
+          </PrivateRoute>
+        ),
+
         path: "admin/settings",
       },
       {
-        Component: AdminTransactionsPage,
+        Component: () => (
+          <PrivateRoute>
+            <AdminRoute>
+              <AdminTransactionsPage />
+            </AdminRoute>
+          </PrivateRoute>
+        ),
         path: "admin/transactions",
       },
     ],
