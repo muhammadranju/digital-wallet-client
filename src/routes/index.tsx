@@ -27,6 +27,7 @@ import AdminRoute from "./AdminRoute";
 import AgentRoute from "./AgentRoute";
 import PrivateRoute from "./PrivateRoute";
 import UserRoute from "./UserRoute";
+import OtpPage from "@/pages/auth/OtpPage";
 
 export const router = createBrowserRouter([
   {
@@ -115,7 +116,7 @@ export const router = createBrowserRouter([
             </AgentRoute>
           </PrivateRoute>
         ),
-        path: "agent",
+        path: "agent/",
       },
       {
         Component: () => (
@@ -223,5 +224,9 @@ export const router = createBrowserRouter([
   {
     Component: ForgotPasswordPage,
     path: "auth/forgot-password",
+  },
+  {
+    Component: OtpPage,
+    path: "auth/otp-verification/:userEmail",
   },
 ]);

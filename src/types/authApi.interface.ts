@@ -15,6 +15,7 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
+  success: boolean;
   data: {
     role: string;
     id: string;
@@ -26,5 +27,7 @@ export interface AuthResponse {
     name: string;
     token: string;
     message: string;
+    statusCode: number;
+    success: boolean;
   };
 }

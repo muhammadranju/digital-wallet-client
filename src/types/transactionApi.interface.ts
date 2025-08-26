@@ -40,5 +40,6 @@ export interface TransactionResponse {
     totalPages: number;
     length: number;
     slice: (start: number, end: number) => Transaction[];
+    filter: (filters: TransactionFilters) => Transaction[];
   };
 }
