@@ -15,6 +15,7 @@ export interface User {
     createdAt: string;
     image: string;
     verified: boolean;
+    length: number;
   };
 }
 
