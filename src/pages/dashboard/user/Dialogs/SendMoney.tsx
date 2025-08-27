@@ -13,12 +13,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSendMoneyMutation } from "@/redux/api/transactionApi";
-import { useGetAgentsQuery } from "@/redux/api/userApi";
-import {
-  useGetBalanceQuery,
-  //   useSendMoneyMutation,
-} from "@/redux/api/walletApi";
-import { Loader, Search, Send, User } from "lucide-react";
+import { useGetUsersQuery } from "@/redux/api/userApi";
+import { useGetBalanceQuery } from "@/redux/api/walletApi";
+import { Search, Send, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -29,11 +26,11 @@ const SendMoney = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { refetch } = useGetBalanceQuery();
-  const { data: agentsData } = useGetAgentsQuery();
-  const agents = agentsData?.data;
+  const { data: usersData } = useGetUsersQuery();
+  const users = usersData?.data;
 
-  const filteredResults = Array.isArray(agents)
-    ? agents.filter(
+  const filteredResults = Array.isArray(users)
+    ? users.filter(
         (user: any) =>
           user.name.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
           user.email.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
@@ -157,11 +154,7 @@ const SendMoney = () => {
             disabled={!recipient || !sendAmount}
             // loading={isSendMoneyLoading}
           >
-            {isSendMoneyLoading ? (
-              <Loader className="mr-2 h-4 w-4" />
-            ) : (
-              "Send Money"
-            )}
+            {isSendMoneyLoading ? "Pressing to send money..." : "Send Money"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -16,7 +16,7 @@ import { useAddMoneyMutation } from "@/redux/api/transactionApi";
 import { useGetAgentsQuery } from "@/redux/api/userApi";
 import { useGetBalanceQuery } from "@/redux/api/walletApi";
 // import type { DepositRequest } from "@/types/walletApi.interface";
-import { Loader, Plus, Search, User } from "lucide-react";
+import { Plus, Search, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -144,11 +144,7 @@ const DepositMoney = () => {
             Cancel
           </Button>
           <Button onClick={handleDeposit}>
-            {isDepositLoading ? (
-              <Loader className="mr-2 h-4 w-4" />
-            ) : (
-              "Request Deposit"
-            )}
+            {isDepositLoading ? "Pressing to deposit..." : "Request Deposit"}
           </Button>
         </DialogFooter>
       </DialogContent>

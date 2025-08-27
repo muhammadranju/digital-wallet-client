@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useWithdrawMoneyMutation } from "@/redux/api/transactionApi";
 import { useGetAgentsQuery } from "@/redux/api/userApi";
 import { useGetBalanceQuery } from "@/redux/api/walletApi";
-import { Loader, Minus, Search, User } from "lucide-react";
+import { Minus, Search, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -144,11 +144,7 @@ const WithdrawMoney = () => {
             Cancel
           </Button>
           <Button onClick={handleWithdraw}>
-            {isWithdrawLoading ? (
-              <Loader className="mr-2 h-4 w-4" />
-            ) : (
-              "Withdraw"
-            )}
+            {isWithdrawLoading ? "Pressing to withdraw..." : "Withdraw"}
           </Button>
         </DialogFooter>
       </DialogContent>
