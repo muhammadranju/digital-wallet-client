@@ -1,4 +1,5 @@
 export interface Transaction {
+  amount: number;
   data: {
     id: string;
     type: "deposit" | "withdraw" | "send" | "receive";
@@ -30,6 +31,9 @@ export interface TransactionFilters {
   statusFilter?: string;
   dateFrom?: Date;
   dateTo?: Date;
+
+  cashIn?: boolean;
+  cashOut?: boolean;
 }
 
 export interface TransactionResponse {

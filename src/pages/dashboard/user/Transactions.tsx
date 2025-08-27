@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetAllTransactionsQuery } from "@/redux/api/transactionApi";
+import { useGetMyTransactionsQuery } from "@/redux/api/transactionApi";
 import {
   Popover,
   PopoverContent,
@@ -51,7 +51,7 @@ export default function TransactionsPage() {
   const itemsPerPage = 10;
 
   // Fetch transactions from the API
-  const { data, isLoading, error, refetch } = useGetAllTransactionsQuery({
+  const { data, isLoading, error, refetch } = useGetMyTransactionsQuery({
     searchQuery,
     typeFilter,
     statusFilter,

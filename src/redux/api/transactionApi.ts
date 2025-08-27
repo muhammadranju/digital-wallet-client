@@ -26,7 +26,7 @@ export const transactionApi = createApi({
   }),
   tagTypes: ["Transaction", "Wallet"],
   endpoints: (builder) => ({
-    getAllTransactions: builder.query<TransactionResponse, TransactionFilters>({
+    getMyTransactions: builder.query<TransactionResponse, TransactionFilters>({
       query: (filters) => {
         const params = new URLSearchParams();
         Object.entries(filters ?? {}).forEach(([key, value]) => {
@@ -35,6 +35,12 @@ export const transactionApi = createApi({
           }
         });
         return `/me?${params.toString()}`;
+      },
+      providesTags: ["Transaction", "Wallet"],
+    }),
+    getAllTransactions: builder.query<TransactionResponse, TransactionFilters>({
+      query: () => {
+        return `/`;
       },
       providesTags: ["Transaction", "Wallet"],
     }),
@@ -98,6 +104,7 @@ export const transactionApi = createApi({
 
 export const {
   useGetAllTransactionsQuery,
+  useGetMyTransactionsQuery,
   useAddMoneyMutation,
   useWithdrawMoneyMutation,
   useSendMoneyMutation,

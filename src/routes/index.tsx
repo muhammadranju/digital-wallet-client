@@ -3,6 +3,7 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import About from "@/pages/About";
 import ForgotPasswordPage from "@/pages/auth/ForgotPassword";
 import LoginPage from "@/pages/auth/Login";
+import OtpPage from "@/pages/auth/OtpPage";
 import SignupPage from "@/pages/auth/Signup";
 import Contact from "@/pages/Contact";
 import AdminDashboardPage from "@/pages/dashboard/admin/AdminDashboardPage";
@@ -10,7 +11,6 @@ import AdminAgentsPage from "@/pages/dashboard/admin/AgentsPage";
 import AdminSettingsPage from "@/pages/dashboard/admin/SettingsPage";
 import AdminTransactionsPage from "@/pages/dashboard/admin/TransactionsPage";
 import AdminUsersPage from "@/pages/dashboard/admin/UserPage";
-import AgentDashboardPage from "@/pages/dashboard/agent/AgentDashboardPage";
 import CashOperationsPage from "@/pages/dashboard/agent/CashOperationsPage";
 import CommissionPage from "@/pages/dashboard/agent/Commission";
 import AgentProfilePage from "@/pages/dashboard/agent/Profile";
@@ -27,7 +27,6 @@ import AdminRoute from "./AdminRoute";
 import AgentRoute from "./AgentRoute";
 import PrivateRoute from "./PrivateRoute";
 import UserRoute from "./UserRoute";
-import OtpPage from "@/pages/auth/OtpPage";
 
 export const router = createBrowserRouter([
   {
@@ -112,7 +111,7 @@ export const router = createBrowserRouter([
         Component: () => (
           <PrivateRoute>
             <AgentRoute>
-              <AgentDashboardPage />
+              <CashOperationsPage />
             </AgentRoute>
           </PrivateRoute>
         ),
