@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,125 +13,129 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Search, Filter, UserCheck, UserX, Eye, MapPin, DollarSign } from "lucide-react"
-import { useState } from "react"
-import { format } from "date-fns"
-
-// Mock agent data
-const agents = [
-  {
-    id: "AGT001",
-    name: "Agent Smith",
-    email: "agent.smith@example.com",
-    phone: "+1234567890",
-    location: "Downtown Branch",
-    status: "active",
-    joinDate: "2024-01-10",
-    lastActivity: "2024-01-20",
-    transactionCount: 156,
-    totalCommission: 1245.5,
-    rating: 4.8,
-  },
-  {
-    id: "AGT002",
-    name: "Sarah Wilson",
-    email: "sarah.wilson@example.com",
-    phone: "+1234567891",
-    location: "Mall Branch",
-    status: "pending",
-    joinDate: "2024-01-18",
-    lastActivity: "2024-01-19",
-    transactionCount: 0,
-    totalCommission: 0,
-    rating: 0,
-  },
-  {
-    id: "AGT003",
-    name: "Mike Johnson",
-    email: "mike.johnson@example.com",
-    phone: "+1234567892",
-    location: "Airport Terminal",
-    status: "active",
-    joinDate: "2024-01-05",
-    lastActivity: "2024-01-20",
-    transactionCount: 234,
-    totalCommission: 2890.75,
-    rating: 4.9,
-  },
-  {
-    id: "AGT004",
-    name: "Emma Davis",
-    email: "emma.davis@example.com",
-    phone: "+1234567893",
-    location: "Shopping Center",
-    status: "suspended",
-    joinDate: "2024-01-12",
-    lastActivity: "2024-01-17",
-    transactionCount: 89,
-    totalCommission: 567.25,
-    rating: 4.2,
-  },
-  {
-    id: "AGT005",
-    name: "John Brown",
-    email: "john.brown@example.com",
-    phone: "+1234567894",
-    location: "Downtown Branch",
-    status: "active",
-    joinDate: "2024-01-08",
-    lastActivity: "2024-01-19",
-    transactionCount: 178,
-    totalCommission: 1678.9,
-    rating: 4.7,
-  },
-]
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useApproveUserMutation,
+  useGetAgentsQuery,
+  useSuspendUserMutation,
+} from "@/redux/api/userApi";
+import { format } from "date-fns";
+import {
+  Eye,
+  Filter,
+  MapPin,
+  Search,
+  Shield,
+  ShieldOff,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import SkeletonTable from "./skeletons/TabelSkeletons";
 
 export default function AdminAgentsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [locationFilter, setLocationFilter] = useState("all")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedAgent, setSelectedAgent] = useState<any>(null)
-  const itemsPerPage = 10
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [riskFilter, setRiskFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [modelOpen, setModelOpen] = useState(false);
+  const itemsPerPage = 10;
 
-  // Filter agents
-  const filteredAgents = agents.filter((agent) => {
-    const matchesSearch =
-      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.id.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || agent.status === statusFilter
-    const matchesLocation = locationFilter === "all" || agent.location === locationFilter
+  const {
+    data: agentsData,
+    refetch,
+    isLoading: agentsIsLoading,
+  } = useGetAgentsQuery();
+  const [approveUser] = useApproveUserMutation();
+  const [suspendUser] = useSuspendUserMutation();
 
-    return matchesSearch && matchesStatus && matchesLocation
-  })
+  console.log(agentsData);
+  const agents = Array.isArray(agentsData?.data) ? agentsData.data : [];
+  // Filter users
+  const filteredAgents = agents?.filter(
+    (agent: {
+      name: string;
+      email: string;
+      id: string;
+      status: string;
+      isActive: string;
+    }) => {
+      const matchesSearch =
+        agent.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        agent.email?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        agent.id?.toLowerCase().includes(searchQuery?.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || agent.status === statusFilter;
+      const matchesRisk = riskFilter === "all" || agent.isActive === riskFilter;
+
+      return matchesSearch && matchesStatus && matchesRisk;
+    }
+  );
 
   // Pagination
-  const totalPages = Math.ceil(filteredAgents.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedAgents = filteredAgents.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = Math.ceil(filteredAgents?.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedAgents = filteredAgents?.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-50 text-green-700"
-      case "pending":
-        return "bg-orange-50 text-orange-700"
-      case "suspended":
-        return "bg-red-50 text-red-700"
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case "ACTIVE":
+        return "bg-green-50 text-green-700";
+      case "BLOCKED":
+        return "bg-orange-50 text-orange-700";
+      case "SUSPENDED":
+        return "bg-red-50 text-red-700";
       default:
-        return "bg-gray-50 text-gray-700"
+        return "bg-gray-50 text-gray-700";
     }
-  }
+  };
 
   const handleAgentAction = (agentId: string, action: string) => {
-    console.log(`[v0] ${action} agent ${agentId}`)
-    // Handle agent actions here
-  }
-
-  // Get unique locations for filter
-  const locations = [...new Set(agents.map((agent) => agent.location))]
+    if (action === "block") {
+      console.log(agentId);
+      suspendUser(agentId as string)
+        .unwrap()
+        .then(() => {
+          toast.success("Agent blocked successfully");
+          refetch();
+          setModelOpen(false);
+        })
+        .catch(() => {
+          toast.error("Failed to block agent");
+        });
+    } else if (action === "unblock") {
+      approveUser(agentId as string)
+        .unwrap()
+        .then(() => {
+          toast.success("Agent unblocked successfully");
+          refetch();
+          setModelOpen(false);
+        })
+        .catch(() => {
+          toast.error("Failed to unblock agent");
+        });
+    }
+  };
 
   return (
     <DashboardLayout userRole="admin">
@@ -141,40 +143,41 @@ export default function AdminAgentsPage() {
         {/* Page Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Agent Management</h1>
-            <p className="text-muted-foreground">Approve, manage, and monitor agent performance</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Agent Management
+            </h1>
+            <p className="text-muted-foreground">
+              Approve, manage, and monitor agent performance
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sr-only">
             <Button variant="outline" className="gap-2 bg-transparent">
-              <UserCheck className="h-4 w-4" />
+              <Users className="h-4 w-4" />
               Export Agents
             </Button>
           </div>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Agents</p>
-                  <p className="text-2xl font-bold">{agents.length}</p>
-                </div>
-                <UserCheck className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Agents</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {agents.filter((a) => a.status === "active").length}
+                  <p className="text-2xl font-bold">
+                    {agentsIsLoading ? (
+                      <NumberTicker
+                        value={1011}
+                        decimalPlaces={1}
+                        className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-black dark:text-white"
+                      />
+                    ) : (
+                      agents?.length || 0
+                    )}
                   </p>
                 </div>
-                <UserCheck className="h-8 w-8 text-green-600" />
+                <Users className="h-8 w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -182,32 +185,63 @@ export default function AdminAgentsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending Approval</p>
+                  <p className="text-sm text-muted-foreground">Active Agent</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {agentsIsLoading ? (
+                      <NumberTicker
+                        value={1011}
+                        decimalPlaces={1}
+                        className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-green-600 dark:text-white"
+                      />
+                    ) : (
+                      agents?.filter(
+                        (u: { isActive: string }) => u.isActive === "ACTIVE"
+                      )?.length
+                    )}
+                  </p>
+                </div>
+                <Shield className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Blocked Agent</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {agentsIsLoading ? (
+                      <NumberTicker
+                        value={1011}
+                        decimalPlaces={1}
+                        className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-red-600 dark:text-white"
+                      />
+                    ) : (
+                      agents?.filter((u) => u.isActive === "SUSPENDED")?.length
+                    )}
+                  </p>
+                </div>
+                <ShieldOff className="h-8 w-8 text-red-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="sr-only">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">High Risk</p>
                   <p className="text-2xl font-bold text-orange-600">
-                    {agents.filter((a) => a.status === "pending").length}
+                    {/* {Agent?.filter((u: any) => u.riskLevel === "high")?.length} */}
                   </p>
                 </div>
-                <UserX className="h-8 w-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Commission</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    ${agents.reduce((sum, a) => sum + a.totalCommission, 0).toFixed(2)}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-green-600" />
+                <Filter className="h-8 w-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="sr-only">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
@@ -220,7 +254,7 @@ export default function AdminAgentsPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search agents..."
+                  placeholder="Search users..."
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -235,32 +269,30 @@ export default function AdminAgentsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="blocked">Blocked</SelectItem>
                   <SelectItem value="suspended">Suspended</SelectItem>
                 </SelectContent>
               </Select>
 
-              {/* Location Filter */}
-              <Select value={locationFilter} onValueChange={setLocationFilter}>
+              {/* Risk Filter
+              <Select value={riskFilter} onValueChange={setRiskFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Location" />
+                  <SelectValue placeholder="Risk Level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">All Risk Levels</SelectItem>
+                  <SelectItem value="low">Low Risk</SelectItem>
+                  <SelectItem value="medium">Medium Risk</SelectItem>
+                  <SelectItem value="high">High Risk</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
 
               <Button
                 variant="outline"
                 onClick={() => {
-                  setSearchQuery("")
-                  setStatusFilter("all")
-                  setLocationFilter("all")
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                  setRiskFilter("all");
                 }}
               >
                 Clear Filters
@@ -269,172 +301,230 @@ export default function AdminAgentsPage() {
           </CardContent>
         </Card>
 
-        {/* Agents Table */}
+        {/* Agent Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Agents ({filteredAgents.length})</CardTitle>
+            <CardTitle>
+              Agents (
+              {agentsIsLoading ? (
+                <NumberTicker
+                  value={1011}
+                  decimalPlaces={1}
+                  className="whitespace-pre-wrap  font-bold tracking-tighter text-black dark:text-white"
+                />
+              ) : (
+                filteredAgents?.length
+              )}
+              )
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Agent</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Transactions</TableHead>
-                  <TableHead>Commission</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedAgents.map((agent) => (
-                  <TableRow key={agent.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>
-                            {agent.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{agent.name}</p>
-                          <p className="text-sm text-muted-foreground">{agent.email}</p>
-                          <p className="text-xs text-muted-foreground">{agent.id}</p>
+          
+          {agentsIsLoading ? (
+            <SkeletonTable />
+          ) : (
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Agent</TableHead>
+                    <TableHead>Contact Number</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedAgents?.map((agent: any) => (
+                    <TableRow key={agent._id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>
+                              {agent.name
+                                .split(" ")
+                                ?.map((n: any) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{agent.name}</p>
+
+                            <p className="text-xs text-muted-foreground">
+                              {agent._id}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{agent.location}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{agent.transactionCount}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium text-green-600">${agent.totalCommission.toFixed(2)}</span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm">{agent.rating > 0 ? agent.rating.toFixed(1) : "N/A"}</span>
-                        {agent.rating > 0 && <span className="text-yellow-500">★</span>}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={getStatusColor(agent.status)}>
-                        {agent.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedAgent(agent)}
-                              className="bg-transparent"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>Agent Details - {selectedAgent?.name}</DialogTitle>
-                              <DialogDescription>View and manage agent account information</DialogDescription>
-                            </DialogHeader>
-                            {selectedAgent && (
-                              <div className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                  <div>
-                                    <label className="text-sm font-medium">Agent ID</label>
-                                    <p className="text-sm text-muted-foreground">{selectedAgent.id}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">Phone</label>
-                                    <p className="text-sm text-muted-foreground">{selectedAgent.phone}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">Join Date</label>
-                                    <p className="text-sm text-muted-foreground">
-                                      {format(new Date(selectedAgent.joinDate), "MMM dd, yyyy")}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">Last Activity</label>
-                                    <p className="text-sm text-muted-foreground">
-                                      {format(new Date(selectedAgent.lastActivity), "MMM dd, yyyy")}
-                                    </p>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium ">
+                          +88{agent?.contact}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium ">{agent?.email}</span>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {agent.location || "Bangladesh"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={"capitalize"}>
+                          {agent.role?.toLowerCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className={getRiskColor(agent.isActive)}
+                        >
+                          {agent.isActive}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Dialog open={modelOpen} onOpenChange={setModelOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedAgent(agent)}
+                                className="bg-transparent"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>
+                                  Agent Details - {selectedAgent?.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  View and manage agent account information
+                                </DialogDescription>
+                              </DialogHeader>
+                              {selectedAgent && (
+                                <div className="space-y-4">
+                                  <div className="grid gap-4 md:grid-cols-2">
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        Agent ID
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {selectedAgent._id}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        Phone
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {selectedAgent.contact}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        Join Date
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {format(
+                                          new Date(selectedAgent.createdAt),
+                                          "MMM dd, yyyy"
+                                        )}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        Email
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {selectedAgent.email}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
-                            <DialogFooter>
-                              <div className="flex gap-2">
-                                {selectedAgent?.status === "pending" && (
-                                  <Button onClick={() => handleAgentAction(selectedAgent.id, "approve")}>
-                                    Approve Agent
-                                  </Button>
-                                )}
-                                {selectedAgent?.status === "active" ? (
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => handleAgentAction(selectedAgent.id, "suspend")}
-                                  >
-                                    Suspend Agent
-                                  </Button>
-                                ) : (
-                                  selectedAgent?.status === "suspended" && (
-                                    <Button onClick={() => handleAgentAction(selectedAgent.id, "activate")}>
-                                      Activate Agent
+                              )}
+                              <DialogFooter>
+                                <div className="flex gap-2">
+                                  {selectedAgent?.isActive === "ACTIVE" ? (
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() =>
+                                        handleAgentAction(
+                                          selectedAgent._id as string,
+                                          "block"
+                                        )
+                                      }
+                                    >
+                                      Block Agent
                                     </Button>
-                                  )
-                                )}
-                                <Button variant="outline">Close</Button>
-                              </div>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                                  ) : (
+                                    <Button
+                                      onClick={() =>
+                                        handleAgentAction(
+                                          selectedAgent._id as string,
+                                          "unblock"
+                                        )
+                                      }
+                                    >
+                                      Unblock Agent
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setModelOpen(false)}
+                                  >
+                                    Close
+                                  </Button>
+                                </div>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredAgents.length)} of{" "}
-                {filteredAgents.length} agents
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(startIndex + itemsPerPage, filteredAgents?.length)}{" "}
+                  of {filteredAgents?.length} agents
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

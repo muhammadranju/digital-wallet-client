@@ -29,73 +29,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Search, Filter, Users, Shield, ShieldOff, Eye } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Users,
+  Shield,
+  ShieldOff,
+  Eye,
+  MapPin,
+} from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
-
-// Mock user data
-const users = [
-  {
-    id: "USR001",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    balance: 2450.0,
-    status: "active",
-    joinDate: "2024-01-15",
-    lastActivity: "2024-01-20",
-    transactionCount: 45,
-    riskLevel: "low",
-  },
-  {
-    id: "USR002",
-    name: "Sarah Johnson",
-    email: "sarah@example.com",
-    phone: "+1234567891",
-    balance: 1250.0,
-    status: "active",
-    joinDate: "2024-01-10",
-    lastActivity: "2024-01-19",
-    transactionCount: 23,
-    riskLevel: "low",
-  },
-  {
-    id: "USR003",
-    name: "Mike Chen",
-    email: "mike@example.com",
-    phone: "+1234567892",
-    balance: 890.5,
-    status: "blocked",
-    joinDate: "2024-01-05",
-    lastActivity: "2024-01-18",
-    transactionCount: 67,
-    riskLevel: "high",
-  },
-  {
-    id: "USR004",
-    name: "Emma Davis",
-    email: "emma@example.com",
-    phone: "+1234567893",
-    balance: 3200.0,
-    status: "active",
-    joinDate: "2024-01-12",
-    lastActivity: "2024-01-20",
-    transactionCount: 89,
-    riskLevel: "medium",
-  },
-  {
-    id: "USR005",
-    name: "Alice Brown",
-    email: "alice@example.com",
-    phone: "+1234567894",
-    balance: 150.0,
-    status: "suspended",
-    joinDate: "2024-01-08",
-    lastActivity: "2024-01-17",
-    transactionCount: 12,
-    riskLevel: "medium",
-  },
-];
+import {
+  useApproveUserMutation,
+  useGetUsersQuery,
+  useSuspendUserMutation,
+} from "@/redux/api/userApi";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { toast } from "sonner";
+import SkeletonTable from "./skeletons/TabelSkeletons";
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,49 +55,55 @@ export default function AdminUsersPage() {
   const [riskFilter, setRiskFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [modelOpen, setModelOpen] = useState(false);
   const itemsPerPage = 10;
 
-  // Filter users
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || user.status === statusFilter;
-    const matchesRisk = riskFilter === "all" || user.riskLevel === riskFilter;
+  const {
+    data: usersData,
+    refetch,
+    isLoading: usersIsLoading,
+  } = useGetUsersQuery();
+  const [approveUser] = useApproveUserMutation();
+  const [suspendUser] = useSuspendUserMutation();
 
-    return matchesSearch && matchesStatus && matchesRisk;
-  });
+  console.log(usersData);
+  const users = Array.isArray(usersData?.data) ? usersData.data : [];
+  // Filter users
+  const filteredUsers = users?.filter(
+    (user: {
+      name: string;
+      email: string;
+      id: string;
+      status: string;
+      isActive: string;
+    }) => {
+      const matchesSearch =
+        user.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        user.id?.toLowerCase().includes(searchQuery?.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || user.status === statusFilter;
+      const matchesRisk = riskFilter === "all" || user.isActive === riskFilter;
+
+      return matchesSearch && matchesStatus && matchesRisk;
+    }
+  );
 
   // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredUsers?.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedUsers = filteredUsers.slice(
+  const paginatedUsers = filteredUsers?.slice(
     startIndex,
     startIndex + itemsPerPage
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-50 text-green-700";
-      case "blocked":
-        return "bg-red-50 text-red-700";
-      case "suspended":
-        return "bg-orange-50 text-orange-700";
-      default:
-        return "bg-gray-50 text-gray-700";
-    }
-  };
-
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case "low":
+      case "ACTIVE":
         return "bg-green-50 text-green-700";
-      case "medium":
+      case "BLOCKED":
         return "bg-orange-50 text-orange-700";
-      case "high":
+      case "SUSPENDED":
         return "bg-red-50 text-red-700";
       default:
         return "bg-gray-50 text-gray-700";
@@ -153,8 +111,30 @@ export default function AdminUsersPage() {
   };
 
   const handleUserAction = (userId: string, action: string) => {
-    console.log(`[v0] ${action} user ${userId}`);
-    // Handle user actions here
+    if (action === "block") {
+      console.log(userId);
+      suspendUser(userId as string)
+        .unwrap()
+        .then(() => {
+          toast.success("User blocked successfully");
+          refetch();
+          setModelOpen(false);
+        })
+        .catch(() => {
+          toast.error("Failed to block user");
+        });
+    } else if (action === "unblock") {
+      approveUser(userId as string)
+        .unwrap()
+        .then(() => {
+          toast.success("User unblocked successfully");
+          refetch();
+          setModelOpen(false);
+        })
+        .catch(() => {
+          toast.error("Failed to unblock user");
+        });
+    }
   };
 
   return (
@@ -170,7 +150,7 @@ export default function AdminUsersPage() {
               View and manage all user accounts
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sr-only">
             <Button variant="outline" className="gap-2 bg-transparent">
               <Users className="h-4 w-4" />
               Export Users
@@ -179,13 +159,23 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold">{users.length}</p>
+                  <p className="text-2xl font-bold">
+                    {usersIsLoading ? (
+                      <NumberTicker
+                        value={1011}
+                        decimalPlaces={1}
+                        className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-black dark:text-white"
+                      />
+                    ) : (
+                      users?.length || 0
+                    )}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-primary" />
               </div>
@@ -197,7 +187,17 @@ export default function AdminUsersPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Active Users</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {users.filter((u) => u.status === "active").length}
+                    {usersIsLoading ? (
+                      <NumberTicker
+                        value={1011}
+                        decimalPlaces={1}
+                        className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-green-600 dark:text-white"
+                      />
+                    ) : (
+                      users?.filter(
+                        (u: { isActive: string }) => u.isActive === "ACTIVE"
+                      )?.length
+                    )}
                   </p>
                 </div>
                 <Shield className="h-8 w-8 text-green-600" />
@@ -210,20 +210,28 @@ export default function AdminUsersPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Blocked Users</p>
                   <p className="text-2xl font-bold text-red-600">
-                    {users.filter((u) => u.status === "blocked").length}
+                    {usersIsLoading ? (
+                      <NumberTicker
+                        value={1011}
+                        decimalPlaces={1}
+                        className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-red-600 dark:text-white"
+                      />
+                    ) : (
+                      users?.filter((u) => u.isActive === "SUSPENDED")?.length
+                    )}
                   </p>
                 </div>
                 <ShieldOff className="h-8 w-8 text-red-600" />
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="sr-only">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">High Risk</p>
                   <p className="text-2xl font-bold text-orange-600">
-                    {users.filter((u) => u.riskLevel === "high").length}
+                    {/* {users?.filter((u: any) => u.riskLevel === "high")?.length} */}
                   </p>
                 </div>
                 <Filter className="h-8 w-8 text-orange-600" />
@@ -233,7 +241,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="sr-only">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
@@ -266,7 +274,7 @@ export default function AdminUsersPage() {
                 </SelectContent>
               </Select>
 
-              {/* Risk Filter */}
+              {/* Risk Filter
               <Select value={riskFilter} onValueChange={setRiskFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Risk Level" />
@@ -277,7 +285,7 @@ export default function AdminUsersPage() {
                   <SelectItem value="medium">Medium Risk</SelectItem>
                   <SelectItem value="high">High Risk</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
 
               <Button
                 variant="outline"
@@ -296,201 +304,223 @@ export default function AdminUsersPage() {
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Users ({filteredUsers.length})</CardTitle>
+            <CardTitle>
+              Users (
+              {usersIsLoading ? (
+                <NumberTicker
+                  value={1011}
+                  decimalPlaces={1}
+                  className="whitespace-pre-wrap  font-bold tracking-tighter text-black dark:text-white"
+                />
+              ) : (
+                filteredUsers?.length
+              )}
+              )
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Balance</TableHead>
-                  <TableHead>Transactions</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Risk Level</TableHead>
-                  <TableHead>Last Activity</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.email}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {user.id}
-                          </p>
+
+          {usersIsLoading ? (
+            <SkeletonTable />
+          ) : (
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Contact Number</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedUsers?.map((user: any) => (
+                    <TableRow key={user._id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>
+                              {user.name
+                                .split(" ")
+                                ?.map((n: any) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{user.name}</p>
+
+                            <p className="text-xs text-muted-foreground">
+                              {user._id}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium">
-                        ${user.balance.toFixed(2)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{user.transactionCount}</span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={getStatusColor(user.status)}
-                      >
-                        {user.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={getRiskColor(user.riskLevel)}
-                      >
-                        {user.riskLevel}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">
-                        {format(new Date(user.lastActivity), "MMM dd, yyyy")}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedUser(user)}
-                              className="bg-transparent"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>
-                                User Details - {selectedUser?.name}
-                              </DialogTitle>
-                              <DialogDescription>
-                                View and manage user account information
-                              </DialogDescription>
-                            </DialogHeader>
-                            {selectedUser && (
-                              <div className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                  <div>
-                                    <label className="text-sm font-medium">
-                                      User ID
-                                    </label>
-                                    <p className="text-sm text-muted-foreground">
-                                      {selectedUser.id}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">
-                                      Phone
-                                    </label>
-                                    <p className="text-sm text-muted-foreground">
-                                      {selectedUser.phone}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">
-                                      Join Date
-                                    </label>
-                                    <p className="text-sm text-muted-foreground">
-                                      {format(
-                                        new Date(selectedUser.joinDate),
-                                        "MMM dd, yyyy"
-                                      )}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">
-                                      Transaction Count
-                                    </label>
-                                    <p className="text-sm text-muted-foreground">
-                                      {selectedUser.transactionCount}
-                                    </p>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium ">+88{user?.contact}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium ">{user?.email}</span>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {user.location || "Bangladesh"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={"capitalize"}>
+                          {user.role?.toLowerCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className={getRiskColor(user.isActive)}
+                        >
+                          {user.isActive}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Dialog open={modelOpen} onOpenChange={setModelOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedUser(user)}
+                                className="bg-transparent"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>
+                                  User Details - {selectedUser?.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  View and manage user account information
+                                </DialogDescription>
+                              </DialogHeader>
+                              {selectedUser && (
+                                <div className="space-y-4">
+                                  <div className="grid gap-4 md:grid-cols-2">
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        User ID
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {selectedUser._id}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        Phone
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {selectedUser.contact}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        Join Date
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {format(
+                                          new Date(selectedUser.createdAt),
+                                          "MMM dd, yyyy"
+                                        )}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="text-sm font-medium">
+                                        Email
+                                      </label>
+                                      <p className="text-sm text-muted-foreground">
+                                        {selectedUser.email}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
-                            <DialogFooter>
-                              <div className="flex gap-2">
-                                {selectedUser?.status === "active" ? (
+                              )}
+                              <DialogFooter>
+                                <div className="flex gap-2">
+                                  {selectedUser?.isActive === "ACTIVE" ? (
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() =>
+                                        handleUserAction(
+                                          selectedUser._id as string,
+                                          "block"
+                                        )
+                                      }
+                                    >
+                                      Block User
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      onClick={() =>
+                                        handleUserAction(
+                                          selectedUser._id as string,
+                                          "unblock"
+                                        )
+                                      }
+                                    >
+                                      Unblock User
+                                    </Button>
+                                  )}
                                   <Button
-                                    variant="destructive"
-                                    onClick={() =>
-                                      handleUserAction(selectedUser.id, "block")
-                                    }
+                                    variant="outline"
+                                    onClick={() => setModelOpen(false)}
                                   >
-                                    Block User
+                                    Close
                                   </Button>
-                                ) : (
-                                  <Button
-                                    onClick={() =>
-                                      handleUserAction(
-                                        selectedUser.id,
-                                        "unblock"
-                                      )
-                                    }
-                                  >
-                                    Unblock User
-                                  </Button>
-                                )}
-                                <Button variant="outline">Close</Button>
-                              </div>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                                </div>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to{" "}
-                {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{" "}
-                {filteredUsers.length} users
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(startIndex + itemsPerPage, filteredUsers?.length)}{" "}
+                  of {filteredUsers?.length} users
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
       </div>
     </DashboardLayout>

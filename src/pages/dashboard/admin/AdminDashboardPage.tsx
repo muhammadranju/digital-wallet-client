@@ -1,23 +1,26 @@
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { StatCard, adminStats } from "@/components/dashboard-stats";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import HelmetTitle from "@/components/layout/HelmetTitle";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useGetAllTransactionsQuery } from "@/redux/api/transactionApi";
+import { useGetAgentsQuery, useGetUsersQuery } from "@/redux/api/userApi";
 import {
-  Users,
-  UserCheck,
+  Activity,
   AlertTriangle,
-  TrendingUp,
+  Clock,
   Settings,
   Shield,
-  Activity,
-  Clock,
+  TrendingUp,
+  UserCheck,
+  UserCheck2,
+  Users,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
 import { useEffect } from "react";
-import HelmetTitle from "@/components/layout/HelmetTitle";
+import { Link, useNavigate } from "react-router";
 
 // Mock recent admin activity data
 const recentActivity = [
@@ -85,6 +88,9 @@ const systemMetrics = [
 ];
 
 export default function AdminDashboardPage() {
+  const { data: agentsData, isLoading: agentsIsLoading } = useGetAgentsQuery();
+  const { data: usersData, isLoading: usersIsLoading } = useGetUsersQuery();
+
   const navigate = useNavigate();
   const userInfo = localStorage.getItem("userData");
   const user = JSON.parse(userInfo as string);
@@ -95,6 +101,14 @@ export default function AdminDashboardPage() {
       navigate("/auth/login");
     }
   }, [navigate]);
+
+  const { data: transactionsData } = useGetAllTransactionsQuery({});
+
+  const transactions = Array.isArray(transactionsData?.data)
+    ? transactionsData.data
+    : [];
+
+  console.log(transactions);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -142,7 +156,7 @@ export default function AdminDashboardPage() {
               System overview and management controls
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sr-only">
             <Link to={"/dashboard/admin/users"}>
               <Button variant="outline" className="gap-2 bg-transparent">
                 <TrendingUp className="h-4 w-4" />
@@ -159,16 +173,75 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {adminStats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
-          ))}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Users
+              </CardTitle>
+              <div className="text-muted-foreground">
+                <Users className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {usersIsLoading ? (
+                  <NumberTicker
+                    value={1011}
+                    decimalPlaces={1}
+                    className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-black dark:text-white"
+                  />
+                ) : (
+                  usersData?.data?.length || 0
+                )}
+              </div>
+              <div className="flex items-center gap-1 mt-1">
+                <Badge
+                  variant="secondary"
+                  className={` text-green-500 text-xs`}
+                >
+                  Active users
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Agents
+              </CardTitle>
+              <div className="text-muted-foreground">
+                <UserCheck2 className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {agentsIsLoading ? (
+                  <NumberTicker
+                    value={1011}
+                    decimalPlaces={1}
+                    className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-black dark:text-white"
+                  />
+                ) : (
+                  agentsData?.data?.length || 0
+                )}
+              </div>
+              <div className="flex items-center gap-1 mt-1">
+                <Badge
+                  variant="secondary"
+                  className={` text-green-500 text-xs`}
+                >
+                  Active agents
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Pending Approvals */}
-          <Card className="lg:col-span-1">
+          <Card className="lg:col-span-1 sr-only">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -222,7 +295,7 @@ export default function AdminDashboardPage() {
           </Card>
 
           {/* Recent Activity */}
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 sr-only">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Activity</CardTitle>
               <Button variant="ghost" size="sm">
@@ -265,7 +338,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* System Health */}
-        <Card>
+        <Card className="sr-only">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
@@ -311,7 +384,7 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Link to={"/dashboard/admin/users"}>
             <Card className="cursor-pointer hover:shadow-md transition-shadow">
               <CardContent className="p-6 text-center">
@@ -355,7 +428,7 @@ export default function AdminDashboardPage() {
           </Link>
 
           <Link to={"/dashboard/admin/settings"}>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow sr-only">
               <CardContent className="p-6 text-center">
                 <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                   <Settings className="h-6 w-6 text-orange-600" />
