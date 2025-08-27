@@ -82,7 +82,7 @@ const navigationItems = {
       label: "Transactions",
       href: "/dashboard/admin/transactions",
     },
-    { icon: Settings, label: "Settings", href: "/dashboard/admin/settings" },
+    // { icon: Settings, label: "Settings", href: "/dashboard/admin/settings" },
   ],
 };
 
