@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
-import { useGetAllTransactionsQuery } from "@/redux/api/transactionApi";
+import { useGetMyTransactionsQuery } from "@/redux/api/transactionApi";
 import TransactionsTableSkeletons from "../user/skeletons/TransactionsTableSkeletons";
 
 // Your existing data structure seems to contain correct fields, so we will use them directly
@@ -50,7 +50,7 @@ export default function AgentTransactionsPage() {
 
   const itemsPerPage = 10;
 
-  const { data, isLoading } = useGetAllTransactionsQuery({
+  const { data, isLoading } = useGetMyTransactionsQuery({
     searchQuery,
     typeFilter,
     statusFilter,

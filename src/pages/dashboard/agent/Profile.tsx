@@ -25,22 +25,20 @@ import ProfileOverviewSkeletons from "../user/skeletons/ProfileOverviewSkeletons
 import ProfileSettingsSkeletons, {
   SettingsSkeletons,
 } from "../user/skeletons/ProfileSettingsSkeletons";
+import { useChangePasswordMutation } from "@/redux/api/authApi";
+import { toast } from "sonner";
 
 export default function AgentProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: "Agent",
-    lastName: "Smith",
-    email: "agent.smith@example.com",
-    phone: "+1 (555) 987-6543",
-    location: "Downtown Branch",
-    agentId: "AGT001",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
   const { data, isLoading } = useGetProfileQuery();
+  const [changePassword, { isLoading: isChangePasswordLoading }] =
+    useChangePasswordMutation();
 
   // Get user data from the API
   const user = data?.data;
@@ -52,7 +50,6 @@ export default function AgentProfilePage() {
     transactionAlerts: true,
     commissionUpdates: true,
   });
-  console.log(data);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -60,6 +57,26 @@ export default function AgentProfilePage() {
 
   const handleNotificationChange = (field: string, value: boolean) => {
     setNotifications((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handelChangePassword = () => {
+    changePassword({
+      currentPassword: formData.currentPassword,
+      newPassword: formData.newPassword,
+      confirmPassword: formData.confirmPassword,
+    })
+      .unwrap()
+      .then(() => {
+        toast.success("Password changed successfully");
+        setFormData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      })
+      .catch(() => {
+        toast.error("Failed to change password");
+      });
   };
 
   return (
@@ -320,7 +337,11 @@ export default function AgentProfilePage() {
                     </div>
                   </div>
 
-                  <Button>Update Password</Button>
+                  <Button onClick={handelChangePassword}>
+                    {isChangePasswordLoading
+                      ? "Changing..."
+                      : "Update Password"}
+                  </Button>
                 </CardContent>
               </Card>
             )}

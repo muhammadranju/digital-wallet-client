@@ -17,21 +17,39 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { countAmount } from "@/lib/countAmount";
+import {
+  useCashInMutation,
+  useCashOutMutation,
+  useGetMyTransactionsQuery,
+} from "@/redux/api/transactionApi";
 import { useGetUsersQuery } from "@/redux/api/userApi";
 import { useGetBalanceQuery } from "@/redux/api/walletApi";
 import { Minus, Plus, Search, TrendingUp, TrendingUpIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function CashOperationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cashInAmount, setCashInAmount] = useState("");
   const [cashOutAmount, setCashOutAmount] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const { data, isLoading } = useGetBalanceQuery();
+
+  const [cashInModelOpen, setCashInModelOpen] = useState(false);
+  const [cashOutModelOpen, setCashOutModelOpen] = useState(false);
+
+  const { data, refetch, isLoading } = useGetBalanceQuery();
   const { data: userData } = useGetUsersQuery();
   const users = Array.isArray(userData?.data) ? userData.data : [];
-
+  const { data: transactionData, isLoading: transactionIsLoading } =
+    useGetMyTransactionsQuery({});
   const balance = data?.data;
+  const { totalCashInAmount, totalCashOutAmount } =
+    countAmount(transactionData);
+
+  const [cashIn, { isLoading: isCashInLoading }] = useCashInMutation();
+
+  const [cashOut, { isLoading: isCashOutLoading }] = useCashOutMutation();
 
   const filteredResults = users.filter(
     (user: any) =>
@@ -39,7 +57,6 @@ export default function CashOperationsPage() {
       user.email?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
       user.contact.includes(searchQuery)
   );
-
   // Mock recent operations
   // const recentOperations = [
   //   {
@@ -70,6 +87,35 @@ export default function CashOperationsPage() {
   //     status: "pending",
   //   },
   // ];
+
+  const handelCashIn = () => {
+    cashIn({ receiverId: selectedUser._id, amount: parseFloat(cashInAmount) })
+      .unwrap()
+      .then(() => {
+        toast.success("Cash In successful");
+        setCashInAmount("");
+        refetch();
+        // setOpen(false);
+        setCashInModelOpen(false);
+      })
+      .catch((error) => {
+        toast.error(error.data.message || "Failed to make the cash out");
+      });
+  };
+
+  const handelCashOut = () => {
+    cashOut({ receiverId: selectedUser._id, amount: parseFloat(cashOutAmount) })
+      .unwrap()
+      .then(() => {
+        toast.success("Cash Out successful");
+        setCashOutAmount("");
+        refetch();
+        setCashOutModelOpen(false);
+      })
+      .catch((error) => {
+        toast.error(error.data.message || "Failed to make the cash out");
+      });
+  };
 
   return (
     <DashboardLayout userRole="agent">
@@ -112,7 +158,7 @@ export default function CashOperationsPage() {
           <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Cash In Today
+                Cash In
               </CardTitle>
               <div className="text-muted-foreground">
                 <TrendingUp className="h-4 w-4" />
@@ -120,7 +166,16 @@ export default function CashOperationsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                $12,450.00
+                $
+                {transactionIsLoading ? (
+                  <NumberTicker
+                    value={120}
+                    decimalPlaces={1}
+                    className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-black dark:text-white"
+                  />
+                ) : (
+                  totalCashInAmount || 0
+                )}
               </div>
               {/* {change && ( */}
               <div className="flex items-center gap-1 mt-1 sr-only">
@@ -151,7 +206,16 @@ export default function CashOperationsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                $12,450.00
+                $
+                {transactionIsLoading ? (
+                  <NumberTicker
+                    value={120}
+                    decimalPlaces={1}
+                    className="whitespace-pre-wrap text-2xl font-bold tracking-tighter text-black dark:text-white"
+                  />
+                ) : (
+                  totalCashOutAmount || 0
+                )}
               </div>
               {/* {change && ( */}
               <div className="flex items-center gap-1 mt-1 sr-only">
@@ -174,7 +238,7 @@ export default function CashOperationsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Search className="h-4 w-4" />
-              Find User
+              Find User to Cash In or Cash Out
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -194,7 +258,7 @@ export default function CashOperationsPage() {
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {filteredResults.map((user: any) => (
                     <div
-                      key={user.id}
+                      key={user._id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted cursor-pointer"
                       onClick={() => {
                         setSelectedUser(user);
@@ -216,13 +280,15 @@ export default function CashOperationsPage() {
                             {user.email}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {user.phone}
+                            +88{user.contact}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">${user.balance}</p>
-                        <Badge variant="secondary">{user.status}</Badge>
+                        {/* <p className="font-medium">${user.balance || 0}</p> */}
+                        <Badge variant="secondary">
+                          {user.status || "Active"}
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -270,7 +336,10 @@ export default function CashOperationsPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 {/* Cash In */}
-                <Dialog>
+                <Dialog
+                  open={cashInModelOpen}
+                  onOpenChange={setCashInModelOpen}
+                >
                   <DialogTrigger asChild>
                     <Button className="h-20 flex-col gap-2">
                       <Plus className="h-6 w-6" />
@@ -299,7 +368,7 @@ export default function CashOperationsPage() {
                           <span>Amount:</span>
                           <span>${cashInAmount || "0.00"}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        {/* <div className="flex justify-between text-sm">
                           <span>Commission (1%):</span>
                           <span>
                             $
@@ -307,7 +376,7 @@ export default function CashOperationsPage() {
                               ? Number.parseFloat(cashInAmount) * 0.01
                               : "0.00"}
                           </span>
-                        </div>
+                        </div> */}
                         <Separator className="my-2" />
                         <div className="flex justify-between font-medium">
                           <span>User receives:</span>
@@ -316,14 +385,24 @@ export default function CashOperationsPage() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline">Cancel</Button>
-                      <Button>Process Cash In</Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setCashInModelOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={handelCashIn}>
+                        {isCashInLoading ? "Processing..." : "Process Cash In"}
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
 
                 {/* Cash Out */}
-                <Dialog>
+                <Dialog
+                  open={cashOutModelOpen}
+                  onOpenChange={setCashOutModelOpen}
+                >
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
@@ -358,7 +437,7 @@ export default function CashOperationsPage() {
                           <span>Amount:</span>
                           <span>${cashOutAmount || "0.00"}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        {/* <div className="flex justify-between text-sm">
                           <span>Commission (1%):</span>
                           <span>
                             $
@@ -366,7 +445,7 @@ export default function CashOperationsPage() {
                               ? Number.parseFloat(cashOutAmount) * 0.01
                               : "0.00"}
                           </span>
-                        </div>
+                        </div> */}
                         <Separator className="my-2" />
                         <div className="flex justify-between font-medium">
                           <span>Cash to give:</span>
@@ -375,8 +454,17 @@ export default function CashOperationsPage() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline">Cancel</Button>
-                      <Button>Process Cash Out</Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setCashOutModelOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={handelCashOut}>
+                        {isCashOutLoading
+                          ? "Processing..."
+                          : "Process Cash Out"}
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
