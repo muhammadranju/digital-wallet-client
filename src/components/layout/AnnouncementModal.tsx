@@ -1,3 +1,4 @@
+import { BASE_URL } from "@/lib/Base_URL";
 import { useEffect, useState } from "react";
 // import { Button } from "../ui/button";
 
@@ -10,7 +11,7 @@ const AnnouncementModal = () => {
   // Function to check server status
   const checkServerStatus = async () => {
     try {
-      const response = await fetch("http://10.10.7.101:5000/api/v1/status");
+      const response = await fetch(`${BASE_URL}/status`);
       const data = await response.json();
 
       if (data.success) {
