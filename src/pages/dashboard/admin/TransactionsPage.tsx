@@ -23,11 +23,8 @@ import {
 import { useGetAllTransactionsQuery } from "@/redux/api/transactionApi";
 import { format } from "date-fns";
 import {
-  Activity,
-  AlertTriangle,
   ArrowDown,
   ArrowUp,
-  DollarSign,
   Download,
   Filter,
   Search,
@@ -40,12 +37,9 @@ export default function AdminTransactionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [riskFilter, setRiskFilter] = useState("all");
   const [amountMin, setAmountMin] = useState("");
   const [amountMax, setAmountMax] = useState("");
-  const [dateFrom, setDateFrom] = useState<Date>();
-  const [dateTo, setDateTo] = useState<Date>();
+  // const [dateTo, setDateTo] = useState<Date>();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -82,28 +76,28 @@ export default function AdminTransactionsPage() {
     const matchesType = typeFilter === "all" || transaction.type === typeFilter;
     const matchesStatus =
       statusFilter === "all" || transaction.status === statusFilter;
-    const matchesCategory =
-      categoryFilter === "all" || transaction.wallet === categoryFilter;
-    const matchesRisk =
-      riskFilter === "all" || transaction.riskLevel === riskFilter;
+    // const matchesCategory =
+    //   categoryFilter === "all" || transaction.wallet === categoryFilter;
+    // const matchesRisk =
+    //   riskFilter === "all" || transaction.riskLevel === riskFilter;
     const matchesAmountMin =
       !amountMin || transaction.amount >= Number.parseFloat(amountMin);
     const matchesAmountMax =
       !amountMax || transaction.amount <= Number.parseFloat(amountMax);
-    const matchesDateFrom =
-      !dateFrom || new Date(transaction.createdAt) >= dateFrom;
-    const matchesDateTo = !dateTo || new Date(transaction.createdAt) <= dateTo;
+    // const matchesDateFrom =
+    //   !dateFrom || new Date(transaction.createdAt) >= dateFrom;
+    // const matchesDateTo = !dateTo || new Date(transaction.createdAt) <= dateTo;
 
     return (
       matchesSearch &&
       matchesType &&
       matchesStatus &&
-      matchesCategory &&
-      matchesRisk &&
+      // matchesCategory &&
+      // matchesRisk &&
       matchesAmountMin &&
-      matchesAmountMax &&
-      matchesDateFrom &&
-      matchesDateTo
+      matchesAmountMax
+      // matchesDateFrom &&
+      // matchesDateTo
     );
   });
 

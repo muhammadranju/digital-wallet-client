@@ -1,5 +1,4 @@
 import type React from "react";
-
 import { useEffect } from "react";
 // import { useRouter } from "next/navigation"
 // import { useAppSelector } from "@/lib/hooks"
@@ -30,9 +29,12 @@ export function ProtectedRoute({
         return;
       }
 
-      if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+      if (allowedRoles && user && !allowedRoles.includes(user.data.role)) {
+        // <-- Change here
         // Redirect to appropriate dashboard based on role
-        switch (user.role) {
+        switch (
+          user.data.role // <-- Change here
+        ) {
           case "admin":
             router("/admin/dashboard");
             break;
@@ -59,9 +61,29 @@ export function ProtectedRoute({
     return null;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.data.role)) {
+    // <-- Change here
     return null;
   }
 
   return <>{children}</>;
+}
+
+export interface User {
+  data: {
+    _id: string;
+    id: string;
+    email: string;
+    name: string;
+    phone: string;
+    contact: string;
+    location: string;
+    role: "user" | "agent" | "admin";
+    status: "active" | "blocked" | "pending";
+    balance?: number;
+    createdAt: string;
+    image: string;
+    verified: boolean;
+    length: number;
+  };
 }
