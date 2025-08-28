@@ -1,3 +1,4 @@
+import AnnouncementModal from "@/components/layout/AnnouncementModal";
 import HelmetTitle from "@/components/layout/HelmetTitle";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <HelmetTitle title="Home" />
       {/* <Navbar /> */}
+
+      <AnnouncementModal />
 
       {/* Hero Section */}
       <section className="relative py-20 px-4 bg-gradient-to-br from-primary/5 to-secondary/5">
