@@ -13,6 +13,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useGetProfileQuery } from "@/redux/api/userApi";
 import { logout } from "@/redux/slices/authSlice";
+import Cookie from "js-cookie";
 import {
   Bell,
   CreditCard,
@@ -21,8 +22,6 @@ import {
   LogOut,
   Menu,
   Search,
-  Settings,
-  // TrendingUp,
   User,
   UserCheck,
   Users,
@@ -32,7 +31,6 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router";
-import Cookie from "js-cookie";
 import { toast } from "sonner";
 
 interface DashboardLayoutProps {
@@ -125,8 +123,8 @@ export function DashboardLayout({
     localStorage.removeItem("isAuthenticated");
     Cookie.remove("token");
     Cookie.remove("isAuthenticated");
-    toast.success("You have been logged out successfully");
     navigate("/auth/login");
+    toast.info("You have been logged out successfully");
   };
 
   const navItems = navigationItems[userRole];
@@ -277,7 +275,7 @@ export function DashboardLayout({
                   <HomeIcon className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
                 </DropdownMenuItem>
-                {userRole === "admin" ? (
+                {/* {userRole === "admin" ? (
                   <DropdownMenuItem
                     onClick={() => navigateWithRole("/settings")}
                   >
@@ -286,7 +284,7 @@ export function DashboardLayout({
                   </DropdownMenuItem>
                 ) : (
                   ""
-                )}
+                )} */}
 
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

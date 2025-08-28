@@ -12,7 +12,15 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { logout } from "@/redux/slices/authSlice";
 import { DialogTitle } from "@radix-ui/react-dialog"; // <- Required for accessibility
-import { HomeIcon, LogOut, Menu, Settings, User, Wallet } from "lucide-react";
+import {
+  CreditCard,
+  HomeIcon,
+  LogOut,
+  Menu,
+  Settings,
+  User,
+  Wallet,
+} from "lucide-react";
 import { useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -42,12 +50,16 @@ export function Navbar() {
 
   const handleLogout = () => {
     dispatch(logout());
+    Cookie.remove("token");
+    Cookie.remove("userRole");
+    Cookie.remove("isAuthenticated");
+    Cookie.remove("userData");
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("userData");
 
-    toast.success("You have been logged out successfully");
+    toast.info("You have been logged out successfully");
     navigate("/");
   };
 
@@ -141,19 +153,18 @@ export function Navbar() {
                           ? "/dashboard/user/profile"
                           : isUser === "AGENT"
                           ? "/dashboard/agent/profile"
-                          : "/dashboard/admin/settings"
+                          : "/dashboard/admin/transactions"
                       }`}
                       className="flex items-center"
                     >
                       {isUser === "USER" || isUser === "AGENT" ? (
                         <User className="mr-2 h-4 w-4" />
                       ) : (
-                        <Settings className="mr-2 h-4 w-4" />
+                        <CreditCard className="mr-2 h-4 w-4" />
                       )}
-                      {/* <Settings className="mr-2 h-4 w-4" /> */}
                       {isUser === "USER" || isUser === "AGENT"
                         ? "Profile"
-                        : "Settings"}
+                        : "Transactions"}
                     </Link>
                   </DropdownMenuItem>
 
