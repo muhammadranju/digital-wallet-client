@@ -11,18 +11,28 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useVerifyOtpMutation } from "@/redux/api/authApi";
+import Cookies from "js-cookie";
 import { Key } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 export default function OtpPage() {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { userEmail } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const userEmail = Cookies.get("email");
+
+  console.log(userEmail);
+
+  const queryParams = new URLSearchParams(location.search);
+
+  // Get the value of the "redirect" parameter
+  const redirect = queryParams.get("redirect");
+  console.log(redirect);
   const [verifyOtp] = useVerifyOtpMutation();
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
@@ -43,7 +53,12 @@ export default function OtpPage() {
       if (result.success) {
         toast.success("OTP verified successfully!");
         // Navigate to the next step after successful OTP verification
-        navigate("/auth/login"); // Adjust accordingly
+        if (redirect === "login") {
+          navigate("/auth/login"); // Adjust accordingly
+        } else if (redirect === "reset-password") {
+          navigate("/auth/change-password"); // Adjust accordingly
+        }
+        Cookies.remove("email");
       } else {
         toast.error("Invalid OTP, please try again.");
       }
@@ -54,6 +69,15 @@ export default function OtpPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (
+      localStorage.getItem("isAuthenticated") === "true" ||
+      Cookies.get("isAuthenticated") === "true"
+    ) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">

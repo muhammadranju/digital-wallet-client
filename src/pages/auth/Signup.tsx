@@ -22,6 +22,7 @@ import {
 import { checkEmailProvider } from "@/lib/checkEmailProvider";
 import { useRegisterMutation } from "@/redux/api/authApi";
 import { setCredentials } from "@/redux/slices/authSlice";
+import Cookies from "js-cookie";
 import {
   Eye,
   EyeOff,
@@ -33,7 +34,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -90,12 +91,13 @@ export default function SignupPage() {
         password: formData.password,
         role: formData.role,
       }).unwrap();
-      console.log(res.data);
       // Save credentials
       if (res?.success) {
-        router(`/auth/otp-verification/${res.data.email}`);
+        Cookies.set("email", res.data.email);
+        router(`/auth/otp-verification/?redirect=login`);
         toast.success("Registration successful and OTP sent to your email");
         dispatch(setCredentials(res.data));
+
         setError("");
       }
     } catch (error: any) {
@@ -104,6 +106,15 @@ export default function SignupPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (
+      localStorage.getItem("isAuthenticated") === "true" ||
+      Cookies.get("isAuthenticated") === "true"
+    ) {
+      router("/");
+    }
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">

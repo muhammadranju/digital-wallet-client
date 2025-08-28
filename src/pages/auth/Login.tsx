@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
 
@@ -102,6 +102,15 @@ export default function LoginPage() {
       setPassword(creds.password);
     }
   };
+
+  useEffect(() => {
+    if (
+      localStorage.getItem("isAuthenticated") === "true" ||
+      Cookies.get("isAuthenticated") === "true"
+    ) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">

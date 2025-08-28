@@ -10,26 +10,47 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useForgotPasswordMutation } from "@/redux/api/authApi";
+import Cookies from "js-cookie";
 import { ArrowLeft, Mail, Wallet } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [resetPassword] = useForgotPasswordMutation();
+  const router = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    const result = await resetPassword({
+      email: email,
+    }).unwrap();
+    console.log(result);
+
+    toast.info("Password reset link sent successfully!");
+    // }
 
     // Simulate password reset process
     setTimeout(() => {
-      setIsSubmitted(true);
-      setIsLoading(false);
+      Cookies.set("email", email);
+      router(`/auth/otp-verification/?redirect=reset-password`);
     }, 1500);
   };
+
+  useEffect(() => {
+    if (
+      localStorage.getItem("isAuthenticated") === "true" ||
+      Cookies.get("isAuthenticated") === "true"
+    ) {
+      router("/");
+    }
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
