@@ -46,6 +46,11 @@ const SendMoney = () => {
       return;
     }
 
+    if (sendAmount.length > 11) {
+      toast.warning("You can only send up to 11 digits amount");
+      return;
+    }
+
     sendMoney({ contact: recipient, amount: parseFloat(sendAmount) })
       .unwrap()
       .then(() => {
@@ -54,8 +59,13 @@ const SendMoney = () => {
         setSendAmount("");
         setOpenSendMoney(false);
       })
-      .catch(() => {
-        toast.error("Failed to send money");
+      .catch((error) => {
+        if (error.data.message === "You don’t have sufficient balance") {
+          toast.warning(error.data.message);
+          return;
+        } else {
+          toast.error(error.data.message || "Failed to send money");
+        }
       });
   };
 

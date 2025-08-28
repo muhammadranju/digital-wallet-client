@@ -166,12 +166,6 @@ export default function AdminTransactionsPage() {
     (sum, t) => sum + t.walletDetails.balance,
     0
   );
-  const completedTransactions = filteredTransactions.filter(
-    (t) => t.status === "COMPLETED"
-  ).length;
-  const highRiskTransactions = filteredTransactions.filter(
-    (t) => t.riskLevel === "high"
-  ).length;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -186,6 +180,29 @@ export default function AdminTransactionsPage() {
     }
   };
 
+  //   export enum PayType {
+  //   ADD_MONEY = 'ADD_MONEY',
+  //   WITHDRAW = 'WITHDRAW',
+  //   SEND_MONEY = 'SEND_MONEY',
+  //   CASH_IN = 'CASH_IN',
+  //   CASH_OUT = 'CASH_OUT',
+  // }
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case "CASH_IN":
+        return "bg-green-50 text-green-700";
+      case "CASH_OUT":
+        return "bg-purple-50 text-purple-700";
+      case "ADD_MONEY":
+        return "bg-blue-50 text-blue-700";
+      case "WITHDRAW":
+        return "bg-red-50 text-red-700";
+      case "SEND_MONEY":
+        return "bg-orange-50 text-orange-700";
+      default:
+        return "bg-gray-50 text-gray-700";
+    }
+  };
   return (
     <DashboardLayout userRole="admin">
       <div className="space-y-6">
@@ -406,9 +423,9 @@ export default function AdminTransactionsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>User</TableHead>
                     <TableHead>Transaction ID</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>User</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Balance</TableHead>
                     <TableHead>Status</TableHead>
@@ -419,12 +436,6 @@ export default function AdminTransactionsPage() {
                 <TableBody>
                   {paginatedTransactions.map((transaction) => (
                     <TableRow key={transaction._id}>
-                      <TableCell>{transaction._id}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {transaction.type.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
                       <TableCell>
                         <div className="text-sm">
                           <p className="font-medium">
@@ -435,6 +446,18 @@ export default function AdminTransactionsPage() {
                           </p>
                         </div>
                       </TableCell>
+                      <TableCell>{transaction._id}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={`capitalize ${getPaymentStatusColor(
+                            transaction.type
+                          )}`}
+                        >
+                          {transaction.type?.toLowerCase().replace("_", " ")}
+                        </Badge>
+                      </TableCell>
+
                       <TableCell>
                         <span className="font-medium">
                           ${transaction.amount.toFixed(2)}
@@ -448,9 +471,11 @@ export default function AdminTransactionsPage() {
                       <TableCell>
                         <Badge
                           variant="secondary"
-                          className={getStatusColor(transaction.status)}
+                          className={`${getStatusColor(
+                            transaction.status
+                          )} capitalize`}
                         >
-                          {transaction.status}
+                          {transaction.status.toLowerCase()}
                         </Badge>
                       </TableCell>
                       {/* <TableCell>

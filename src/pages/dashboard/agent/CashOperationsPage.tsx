@@ -89,6 +89,10 @@ export default function CashOperationsPage() {
   // ];
 
   const handelCashIn = () => {
+    if (cashInAmount.length > 11) {
+      toast.warning("You can only send up to 11 digits amount");
+      return;
+    }
     cashIn({ receiverId: selectedUser._id, amount: parseFloat(cashInAmount) })
       .unwrap()
       .then(() => {
@@ -96,14 +100,20 @@ export default function CashOperationsPage() {
         setCashInAmount("");
         refetch();
         // setOpen(false);
+
         setCashInModelOpen(false);
       })
       .catch((error) => {
-        toast.error(error.data.message || "Failed to make the cash out");
+        toast.warning(error.data.message || "Failed to make the cash out");
       });
   };
 
   const handelCashOut = () => {
+    if (cashOutAmount.length > 11) {
+      toast.warning("You can only send up to 11 digits amount");
+      return;
+    }
+
     cashOut({ receiverId: selectedUser._id, amount: parseFloat(cashOutAmount) })
       .unwrap()
       .then(() => {
@@ -113,7 +123,7 @@ export default function CashOperationsPage() {
         setCashOutModelOpen(false);
       })
       .catch((error) => {
-        toast.error(error.data.message || "Failed to make the cash out");
+        toast.warning(error.data.message || "Failed to make the cash out");
       });
   };
 

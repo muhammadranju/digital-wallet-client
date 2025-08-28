@@ -42,7 +42,11 @@ const WithdrawMoney = () => {
     : [];
 
   const handleWithdraw = () => {
-    console.log(sendAmount);
+    if (sendAmount.length > 11) {
+      toast.warning("You can only send up to 11 digits amount");
+      return;
+    }
+
     const newWithdrawAmount = parseFloat(sendAmount);
     if (isNaN(newWithdrawAmount)) {
       toast.error("Please enter a valid amount");

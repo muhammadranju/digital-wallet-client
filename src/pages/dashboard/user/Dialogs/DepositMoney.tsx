@@ -41,7 +41,11 @@ const DepositMoney = () => {
     : [];
 
   const handleDeposit = () => {
-    console.log(depositAmount);
+    if (depositAmount.length > 11) {
+      toast.warning("You can only send up to 11 digits amount");
+      return;
+    }
+
     const newDepositAmount = parseFloat(depositAmount);
     if (isNaN(newDepositAmount)) {
       toast.error("Please enter a valid amount");
@@ -56,8 +60,8 @@ const DepositMoney = () => {
         refetch();
         setOpen(false);
       })
-      .catch(() => {
-        toast.error("Failed to make the deposit");
+      .catch((error) => {
+        toast.warning(error.data.message || "Failed to make the cash out");
       });
   };
 
