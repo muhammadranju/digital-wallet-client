@@ -27,6 +27,7 @@ import AdminRoute from "./AdminRoute";
 import AgentRoute from "./AgentRoute";
 import PrivateRoute from "./PrivateRoute";
 import UserRoute from "./UserRoute";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   {
@@ -226,6 +227,10 @@ export const router = createBrowserRouter([
   },
   {
     Component: OtpPage,
-    path: "auth/otp-verification/:userEmail",
+    path: "auth/otp-verification",
+  },
+  {
+    Component: NotFoundPage,
+    path: "*",
   },
 ]);

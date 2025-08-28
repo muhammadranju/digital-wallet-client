@@ -148,6 +148,14 @@ export const authApi = createApi({
         body: data,
       }),
     }),
+
+    forgotPassword: builder.mutation<{ message: string }, { email: string }>({
+      query: (data) => ({
+        url: "/forget-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
     verifyOtp: builder.mutation<
       { message: string; success: boolean },
       { email: string; oneTimeCode: number }
@@ -177,4 +185,5 @@ export const {
   useResetPasswordMutation,
   useChangePasswordMutation,
   useVerifyOtpMutation,
+  useForgotPasswordMutation,
 } = authApi;
