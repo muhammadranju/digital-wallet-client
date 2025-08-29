@@ -89,10 +89,6 @@ export default function CashOperationsPage() {
   // ];
 
   const handelCashIn = () => {
-    if (cashInAmount.length > 11) {
-      toast.warning("You can only send up to 11 digits amount");
-      return;
-    }
     cashIn({ receiverId: selectedUser._id, amount: parseFloat(cashInAmount) })
       .unwrap()
       .then(() => {
@@ -109,11 +105,6 @@ export default function CashOperationsPage() {
   };
 
   const handelCashOut = () => {
-    if (cashOutAmount.length > 11) {
-      toast.warning("You can only send up to 11 digits amount");
-      return;
-    }
-
     cashOut({ receiverId: selectedUser._id, amount: parseFloat(cashOutAmount) })
       .unwrap()
       .then(() => {
@@ -376,7 +367,7 @@ export default function CashOperationsPage() {
                       <div className="p-3 bg-muted rounded-lg">
                         <div className="flex justify-between text-sm">
                           <span>Amount:</span>
-                          <span>${cashInAmount || "0.00"}</span>
+                          <span>${cashInAmount}</span>
                         </div>
                         {/* <div className="flex justify-between text-sm">
                           <span>Commission (1%):</span>
@@ -390,7 +381,7 @@ export default function CashOperationsPage() {
                         <Separator className="my-2" />
                         <div className="flex justify-between font-medium">
                           <span>User receives:</span>
-                          <span>${cashInAmount || "0.00"}</span>
+                          <span>${cashInAmount}</span>
                         </div>
                       </div>
                     </div>
@@ -445,7 +436,7 @@ export default function CashOperationsPage() {
                       <div className="p-3 bg-muted rounded-lg">
                         <div className="flex justify-between text-sm">
                           <span>Amount:</span>
-                          <span>${cashOutAmount || "0.00"}</span>
+                          <span>${cashOutAmount}</span>
                         </div>
                         {/* <div className="flex justify-between text-sm">
                           <span>Commission (1%):</span>
@@ -459,7 +450,7 @@ export default function CashOperationsPage() {
                         <Separator className="my-2" />
                         <div className="flex justify-between font-medium">
                           <span>Cash to give:</span>
-                          <span>${cashOutAmount || "0.00"}</span>
+                          <span>${cashOutAmount}</span>
                         </div>
                       </div>
                     </div>
