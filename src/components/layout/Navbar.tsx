@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,27 +9,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useGetProfileQuery } from "@/redux/api/userApi";
 import { logout } from "@/redux/slices/authSlice";
 import { DialogTitle } from "@radix-ui/react-dialog"; // <- Required for accessibility
+import Cookie from "js-cookie";
 import {
   CreditCard,
   HomeIcon,
   LogOut,
   Menu,
-  Settings,
   User,
-  Wallet,
+  Wallet
 } from "lucide-react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router";
 import { toast } from "sonner";
-import Cookie from "js-cookie";
-import { useGetProfileQuery } from "@/redux/api/userApi";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const isUser = localStorage.getItem("userRole");
-  const userInfo = JSON.parse(localStorage.getItem("userData") as string);
   const { data } = useGetProfileQuery();
   const user = data?.data;
 
@@ -107,7 +105,7 @@ export function Navbar() {
                         alt={user?.name || user?.name}
                       />
                       <AvatarFallback>
-                        {userInfo?.name ||
+                        {user?.name ||
                           user?.name
                             .split(" ")
                             .map((n) => n[0])
@@ -220,61 +218,71 @@ export function Navbar() {
                 </NavLink>
               ))}
 
-              <div className="border-t pt-4">
-                <div className="flex items-center space-x-2 mb-4">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
-                      {user?.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">{user?.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {user?.email}
-                    </p>
+              {isAuthenticated ? (
+                <div className="border-t pt-4">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {user?.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 mb-2">
+                    <NavLink
+                      to={`${
+                        isUser === "USER"
+                          ? "/dashboard/user/profile"
+                          : isUser === "AGENT"
+                          ? "/dashboard/agent/profile"
+                          : "/dashboard/admin/transactions"
+                      }`}
+                      className="flex items-center"
+                    >
+                      {isUser === "USER" || isUser === "AGENT" ? (
+                        <User className="mr-2 h-4 w-4" />
+                      ) : (
+                        <CreditCard className="mr-2 h-4 w-4" />
+                      )}
+                      {isUser === "USER" || isUser === "AGENT"
+                        ? "Profile"
+                        : "Transactions"}
+                    </NavLink>
                   </div>
                 </div>
+              ) : (
+                ""
+              )}
 
-                <div className="flex items-center space-x-2 mb-2">
-                  <User className="h-4 w-4" />
-                  <span>Dashboard</span>
+              {!isAuthenticated ? (
+                <div className="border-t pt-4 space-y-2">
+                  <Button variant="ghost" className="w-full" asChild>
+                    <Link to="/auth/login" onClick={() => setIsOpen(false)}>
+                      Sign In
+                    </Link>
+                  </Button>
+                  <Button className="w-full" asChild>
+                    <Link to="/auth/signup" onClick={() => setIsOpen(false)}>
+                      Get Started
+                    </Link>
+                  </Button>
                 </div>
-
-                <NavLink
-                  to="/profile"
-                  className={({ isActive }) =>
-                    `flex items-center space-x-2 text-sm font-medium mb-2 ${
-                      isActive ? "underline underline-offset-4" : ""
-                    }`
-                  }
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>Profile</span>
-                </NavLink>
-
+              ) : (
                 <Button
                   variant="ghost"
                   className="w-full justify-start p-0 h-auto"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleLogout}
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="h-4 w-4" />
                   Log out
                 </Button>
-              </div>
-
-              <div className="border-t pt-4 space-y-2">
-                <Button variant="ghost" className="w-full" asChild>
-                  <Link to="/auth/login" onClick={() => setIsOpen(false)}>
-                    Sign In
-                  </Link>
-                </Button>
-                <Button className="w-full" asChild>
-                  <Link to="/auth/signup" onClick={() => setIsOpen(false)}>
-                    Get Started
-                  </Link>
-                </Button>
-              </div>
+              )}
             </div>
           </SheetContent>
         </Sheet>
